@@ -83,6 +83,21 @@ public:
     [[nodiscard]] const T* data() const noexcept { return data_.data(); }
     [[nodiscard]] T* data() noexcept { return data_.data(); }
 
+    [[nodiscard]] std::size_t logical_memory_bytes() const noexcept {
+        return rows_ * cols_ * sizeof(T);
+    }
+
+    [[nodiscard]] std::size_t allocated_memory_bytes() const noexcept {
+        return data_.capacity() * sizeof(T) + sizeof(*this);
+    }
+
+    [[nodiscard]] bool is_finite() const noexcept {
+        for (const auto& val : data_) {
+            if (!std::isfinite(static_cast<double>(val))) return false;
+        }
+        return true;
+    }
+
     // ==========================================
     // Element Access
     // ==========================================
@@ -305,6 +320,31 @@ public:
         }
 
         return result;
+    }
+
+    /**
+     * @brief Computes Matrix-Vector multiplication: y = A * x.
+     */
+    [[nodiscard]] std::vector<T> multiply(const std::vector<T>& x) const {
+        if (x.size() != cols_) {
+            throw std::invalid_argument("Matrix-vector multiplication dimension mismatch: cols (" +
+                                        std::to_string(cols_) + ") must match vector size (" +
+                                        std::to_string(x.size()) + ")");
+        }
+        std::vector<T> y(rows_, T{0});
+        for (std::size_t i = 0; i < rows_; ++i) {
+            T sum = T{0};
+            const std::size_t row_offset = i * cols_;
+            for (std::size_t j = 0; j < cols_; ++j) {
+                sum += data_[row_offset + j] * x[j];
+            }
+            y[i] = sum;
+        }
+        return y;
+    }
+
+    [[nodiscard]] friend std::vector<T> operator*(const Matrix& A, const std::vector<T>& x) {
+        return A.multiply(x);
     }
 
     // ==========================================

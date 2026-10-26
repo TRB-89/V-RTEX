@@ -77,6 +77,11 @@ add_executable(vortex_sparse_revised_simplex_tests tests/test_sparse_revised_sim
 target_link_libraries(vortex_sparse_revised_simplex_tests PRIVATE vortex_core)
 add_test(NAME SparseRevisedSimplexUnitTests COMMAND vortex_sparse_revised_simplex_tests)
 
+# Numerical Correctness and Memory Audit Suite (Phase 5.1)
+add_executable(vortex_numerical_audit_tests tests/test_numerical_audit.cpp)
+target_link_libraries(vortex_numerical_audit_tests PRIVATE vortex_core)
+add_test(NAME NumericalAuditTests COMMAND vortex_numerical_audit_tests)
+
 # ==============================================================================
 # Benchmarks Executables
 # ==============================================================================

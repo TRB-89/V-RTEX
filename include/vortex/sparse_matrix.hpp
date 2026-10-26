@@ -86,15 +86,85 @@ public:
     [[nodiscard]] bool empty() const noexcept { return values_.empty() && rows_ == 0 && cols_ == 0; }
 
     [[nodiscard]] double sparsity() const noexcept {
+        return stored_sparsity();
+    }
+
+    [[nodiscard]] double stored_sparsity() const noexcept {
         if (rows_ == 0 || cols_ == 0) return 1.0;
         return 1.0 - (static_cast<double>(non_zeros()) / static_cast<double>(rows_ * cols_));
     }
 
-    [[nodiscard]] std::size_t memory_bytes() const noexcept {
+    [[nodiscard]] double true_sparsity(double tol = 0.0) const noexcept {
+        if (rows_ == 0 || cols_ == 0) return 1.0;
+        return 1.0 - (static_cast<double>(count_true_nonzeros(tol)) / static_cast<double>(rows_ * cols_));
+    }
+
+    [[nodiscard]] std::size_t count_true_nonzeros(double tol = 0.0) const noexcept {
+        std::size_t count = 0;
+        for (const auto& v : values_) {
+            if (std::abs(static_cast<double>(v)) > tol) ++count;
+        }
+        return count;
+    }
+
+    [[nodiscard]] std::size_t count_stored_zeros(double tol = 0.0) const noexcept {
+        return values_.size() - count_true_nonzeros(tol);
+    }
+
+    [[nodiscard]] bool has_stored_zeros(double tol = 0.0) const noexcept {
+        return count_stored_zeros(tol) > 0;
+    }
+
+    [[nodiscard]] std::size_t logical_memory_bytes() const noexcept {
+        return (values_.size() * sizeof(T)) +
+               (col_indices_.size() * sizeof(std::size_t)) +
+               (row_ptrs_.size() * sizeof(std::size_t));
+    }
+
+    [[nodiscard]] std::size_t allocated_memory_bytes() const noexcept {
         return (values_.capacity() * sizeof(T)) +
                (col_indices_.capacity() * sizeof(std::size_t)) +
                (row_ptrs_.capacity() * sizeof(std::size_t)) +
                sizeof(*this);
+    }
+
+    [[nodiscard]] std::size_t memory_bytes() const noexcept {
+        return allocated_memory_bytes();
+    }
+
+    void shrink_to_fit() {
+        values_.shrink_to_fit();
+        col_indices_.shrink_to_fit();
+        row_ptrs_.shrink_to_fit();
+    }
+
+    void drop_zeros(double tol = 0.0) {
+        std::vector<T> new_vals;
+        std::vector<std::size_t> new_cols;
+        std::vector<std::size_t> new_ptrs(rows_ + 1, 0);
+        new_vals.reserve(values_.size());
+        new_cols.reserve(col_indices_.size());
+
+        for (std::size_t r = 0; r < rows_; ++r) {
+            new_ptrs[r] = new_vals.size();
+            for (std::size_t idx = row_ptrs_[r]; idx < row_ptrs_[r + 1]; ++idx) {
+                if (std::abs(static_cast<double>(values_[idx])) > tol) {
+                    new_vals.push_back(values_[idx]);
+                    new_cols.push_back(col_indices_[idx]);
+                }
+            }
+        }
+        new_ptrs[rows_] = new_vals.size();
+        values_ = std::move(new_vals);
+        col_indices_ = std::move(new_cols);
+        row_ptrs_ = std::move(new_ptrs);
+    }
+
+    [[nodiscard]] bool is_finite() const noexcept {
+        for (const auto& v : values_) {
+            if (!std::isfinite(static_cast<double>(v))) return false;
+        }
+        return true;
     }
 
     [[nodiscard]] const std::vector<T>& values() const noexcept { return values_; }
@@ -193,13 +263,11 @@ public:
                 }
             }
 
-            if (std::abs(static_cast<double>(val)) > 1e-15) {
-                while (current_row < triplets[i].row) {
-                    csr.row_ptrs_[++current_row] = csr.values_.size();
-                }
-                csr.values_.push_back(val);
-                csr.col_indices_.push_back(triplets[i].col);
+            while (current_row < triplets[i].row) {
+                csr.row_ptrs_[++current_row] = csr.values_.size();
             }
+            csr.values_.push_back(val);
+            csr.col_indices_.push_back(triplets[i].col);
         }
 
         while (current_row < rows) {
@@ -368,15 +436,85 @@ public:
     [[nodiscard]] bool empty() const noexcept { return values_.empty() && rows_ == 0 && cols_ == 0; }
 
     [[nodiscard]] double sparsity() const noexcept {
+        return stored_sparsity();
+    }
+
+    [[nodiscard]] double stored_sparsity() const noexcept {
         if (rows_ == 0 || cols_ == 0) return 1.0;
         return 1.0 - (static_cast<double>(non_zeros()) / static_cast<double>(rows_ * cols_));
     }
 
-    [[nodiscard]] std::size_t memory_bytes() const noexcept {
+    [[nodiscard]] double true_sparsity(double tol = 0.0) const noexcept {
+        if (rows_ == 0 || cols_ == 0) return 1.0;
+        return 1.0 - (static_cast<double>(count_true_nonzeros(tol)) / static_cast<double>(rows_ * cols_));
+    }
+
+    [[nodiscard]] std::size_t count_true_nonzeros(double tol = 0.0) const noexcept {
+        std::size_t count = 0;
+        for (const auto& v : values_) {
+            if (std::abs(static_cast<double>(v)) > tol) ++count;
+        }
+        return count;
+    }
+
+    [[nodiscard]] std::size_t count_stored_zeros(double tol = 0.0) const noexcept {
+        return values_.size() - count_true_nonzeros(tol);
+    }
+
+    [[nodiscard]] bool has_stored_zeros(double tol = 0.0) const noexcept {
+        return count_stored_zeros(tol) > 0;
+    }
+
+    [[nodiscard]] std::size_t logical_memory_bytes() const noexcept {
+        return (values_.size() * sizeof(T)) +
+               (row_indices_.size() * sizeof(std::size_t)) +
+               (col_ptrs_.size() * sizeof(std::size_t));
+    }
+
+    [[nodiscard]] std::size_t allocated_memory_bytes() const noexcept {
         return (values_.capacity() * sizeof(T)) +
                (row_indices_.capacity() * sizeof(std::size_t)) +
                (col_ptrs_.capacity() * sizeof(std::size_t)) +
                sizeof(*this);
+    }
+
+    [[nodiscard]] std::size_t memory_bytes() const noexcept {
+        return allocated_memory_bytes();
+    }
+
+    void shrink_to_fit() {
+        values_.shrink_to_fit();
+        row_indices_.shrink_to_fit();
+        col_ptrs_.shrink_to_fit();
+    }
+
+    void drop_zeros(double tol = 0.0) {
+        std::vector<T> new_vals;
+        std::vector<std::size_t> new_rows;
+        std::vector<std::size_t> new_ptrs(cols_ + 1, 0);
+        new_vals.reserve(values_.size());
+        new_rows.reserve(row_indices_.size());
+
+        for (std::size_t c = 0; c < cols_; ++c) {
+            new_ptrs[c] = new_vals.size();
+            for (std::size_t idx = col_ptrs_[c]; idx < col_ptrs_[c + 1]; ++idx) {
+                if (std::abs(static_cast<double>(values_[idx])) > tol) {
+                    new_vals.push_back(values_[idx]);
+                    new_rows.push_back(row_indices_[idx]);
+                }
+            }
+        }
+        new_ptrs[cols_] = new_vals.size();
+        values_ = std::move(new_vals);
+        row_indices_ = std::move(new_rows);
+        col_ptrs_ = std::move(new_ptrs);
+    }
+
+    [[nodiscard]] bool is_finite() const noexcept {
+        for (const auto& v : values_) {
+            if (!std::isfinite(static_cast<double>(v))) return false;
+        }
+        return true;
     }
 
     [[nodiscard]] const std::vector<T>& values() const noexcept { return values_; }
@@ -469,13 +607,11 @@ public:
                 }
             }
 
-            if (std::abs(static_cast<double>(val)) > 1e-15) {
-                while (current_col < triplets[i].col) {
-                    csc.col_ptrs_[++current_col] = csc.values_.size();
-                }
-                csc.values_.push_back(val);
-                csc.row_indices_.push_back(triplets[i].row);
+            while (current_col < triplets[i].col) {
+                csc.col_ptrs_[++current_col] = csc.values_.size();
             }
+            csc.values_.push_back(val);
+            csc.row_indices_.push_back(triplets[i].row);
         }
 
         while (current_col < cols) {

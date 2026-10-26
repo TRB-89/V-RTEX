@@ -32,6 +32,13 @@ std::optional<std::string> SparseRevisedSimplexSolver::validate_input_standard(
                ") must equal b size (" + std::to_string(b.size()) + ").";
     }
 
+    for (double val : c) {
+        if (!std::isfinite(val)) return "Invalid input: objective vector c contains non-finite values (NaN or Inf).";
+    }
+    for (double val : b) {
+        if (!std::isfinite(val)) return "Invalid input: right-hand side vector b contains non-finite values (NaN or Inf).";
+    }
+
     for (std::size_t i = 0; i < b.size(); ++i) {
         if (b[i] < -options_.tolerance) {
             return "Unsupported input: negative RHS detected (b[" + std::to_string(i) +
@@ -69,6 +76,13 @@ std::optional<std::string> SparseRevisedSimplexSolver::validate_input_general(
     if (constraint_types.size() != a_rows) {
         return "Dimension mismatch: constraint_types size (" + std::to_string(constraint_types.size()) +
                ") must equal A rows (" + std::to_string(a_rows) + ").";
+    }
+
+    for (double val : c) {
+        if (!std::isfinite(val)) return "Invalid input: objective vector c contains non-finite values (NaN or Inf).";
+    }
+    for (double val : b) {
+        if (!std::isfinite(val)) return "Invalid input: right-hand side vector b contains non-finite values (NaN or Inf).";
     }
 
     return std::nullopt;
@@ -277,6 +291,12 @@ SparseRevisedSimplexResult SparseRevisedSimplexSolver::solve(
         res.message = *validation_err;
         return res;
     }
+    if (!A_csc.is_finite()) {
+        SparseRevisedSimplexResult res;
+        res.status = SolverStatus::INVALID_INPUT;
+        res.message = "Invalid input: constraint matrix A contains non-finite values (NaN or Inf).";
+        return res;
+    }
 
     const std::size_t m = A_csc.rows();
     const std::size_t n = c.size();
@@ -380,6 +400,12 @@ SparseRevisedSimplexResult SparseRevisedSimplexSolver::solve(
         SparseRevisedSimplexResult res;
         res.status = SolverStatus::INVALID_INPUT;
         res.message = *validation_err;
+        return res;
+    }
+    if (!A_csc.is_finite()) {
+        SparseRevisedSimplexResult res;
+        res.status = SolverStatus::INVALID_INPUT;
+        res.message = "Invalid input: constraint matrix A contains non-finite values (NaN or Inf).";
         return res;
     }
 
