@@ -1,0 +1,33 @@
+# Build directories
+build/
+bin/
+lib/
+out/
+
+# CMake temporary files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.ninja
+*.ninja_deps
+*.ninja_log
+CTestTestfile.cmake
+Testing/
+
+# Compiler and IDE artifacts
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+.vscode/
+.idea/
+*.user
+.DS_Store
+Thumbs.db
