@@ -21,6 +21,7 @@ endif()
 add_library(vortex_core STATIC
     src/simplex.cpp
     src/revised_simplex.cpp
+    src/sparse_revised_simplex.cpp
 )
 
 target_include_directories(vortex_core PUBLIC
@@ -66,9 +67,23 @@ add_executable(vortex_revised_simplex_tests tests/test_revised_simplex.cpp)
 target_link_libraries(vortex_revised_simplex_tests PRIVATE vortex_core)
 add_test(NAME RevisedSimplexUnitTests COMMAND vortex_revised_simplex_tests)
 
+# Sparse Matrix Engine Test Suite (Phase 5)
+add_executable(vortex_sparse_matrix_tests tests/test_sparse_matrix.cpp)
+target_link_libraries(vortex_sparse_matrix_tests PRIVATE vortex_core)
+add_test(NAME SparseMatrixUnitTests COMMAND vortex_sparse_matrix_tests)
+
+# Sparse Revised Simplex Test Suite (Phase 5)
+add_executable(vortex_sparse_revised_simplex_tests tests/test_sparse_revised_simplex.cpp)
+target_link_libraries(vortex_sparse_revised_simplex_tests PRIVATE vortex_core)
+add_test(NAME SparseRevisedSimplexUnitTests COMMAND vortex_sparse_revised_simplex_tests)
+
 # ==============================================================================
-# Benchmarks Executable: vortex_benchmarks
+# Benchmarks Executables
 # ==============================================================================
 add_executable(vortex_benchmarks benchmarks/benchmark_matrix.cpp)
 target_link_libraries(vortex_benchmarks PRIVATE vortex_core)
+
+add_executable(vortex_sparse_benchmarks benchmarks/benchmark_sparse.cpp)
+target_link_libraries(vortex_sparse_benchmarks PRIVATE vortex_core)
+
 

@@ -2,6 +2,8 @@
 #include "simplex.hpp"
 #include "vortex/lu_decomposition.hpp"
 #include "vortex/revised_simplex.hpp"
+#include "vortex/sparse_matrix.hpp"
+#include "vortex/sparse_revised_simplex.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -189,16 +191,77 @@ void demo_revised_simplex() {
     std::cout << "  Basis Condition:     " << res.basis_condition << "\n";
 }
 
+void demo_sparse_engine() {
+    std::cout << "\n=========================================================\n";
+    std::cout << "  PART 5: Sparse Matrix Engine (Phase 5)                 \n";
+    std::cout << "=========================================================\n\n";
+
+    // 1. Sparse Matrix Setup and SpMV
+    std::cout << "[5A] CSR & CSC Sparse Representations & SpMV:\n";
+    std::vector<vortex::Triplet<double>> triplets = {
+        {0, 0, 4.0}, {0, 3, 1.0},
+        {1, 1, 3.0}, {1, 2, 2.0},
+        {2, 0, 1.0}, {2, 2, 5.0}
+    };
+    auto csr = vortex::CSRMatrix<double>::from_triplets(3, 4, triplets);
+    auto csc = csr.to_csc();
+
+    std::cout << "Constructed 3x4 CSR Matrix with " << csr.non_zeros()
+              << " non-zeros (" << std::fixed << std::setprecision(1)
+              << (csr.sparsity() * 100.0) << "% sparse).\n";
+
+    std::vector<double> x = {1.0, 2.0, 3.0, 4.0};
+    auto y = csr.multiply(x);
+    std::cout << "Sparse Matrix-Vector SpMV y = A * [1, 2, 3, 4]^T:\n";
+    std::cout << "  y = [" << y[0] << ", " << y[1] << ", " << y[2] << "]^T (Expected: [8, 12, 16])\n\n";
+
+    // 2. Sparse Revised Simplex
+    std::cout << "[5B] Solving Benchmark Problem via Sparse Revised Simplex:\n";
+    std::cout << "  Maximize   Z = 3x + 5y\n";
+    std::cout << "  Subject to:   x          <= 4\n";
+    std::cout << "                    2y     <= 12\n";
+    std::cout << "               3x + 2y     <= 18\n";
+    std::cout << "               x, y        >= 0\n\n";
+
+    std::vector<double> c = {3.0, 5.0};
+    vortex::Matrix<double> A_dense = {
+        {1.0, 0.0},
+        {0.0, 2.0},
+        {3.0, 2.0}
+    };
+    std::vector<double> b = {4.0, 12.0, 18.0};
+
+    auto A_csc = vortex::CSCMatrix<double>::from_dense(A_dense);
+
+    vortex::SparseRevisedSimplexSolver solver;
+    auto res = solver.solve(c, A_csc, b);
+
+    std::cout << "---------------- Sparse Revised Results ----------------\n";
+    std::cout << "Status:             " << vortex::to_string(res.status) << "\n";
+    std::cout << "Message:            " << res.message << "\n";
+    std::cout << "Total Pivots:       " << res.iterations << "\n";
+    std::cout << "Optimal Z*:         " << std::fixed << std::setprecision(4) << res.objective_value << "\n";
+    std::cout << "Variables:\n";
+    std::cout << "  x = " << res.variable_values[0] << " (Expected: 2.0)\n";
+    std::cout << "  y = " << res.variable_values[1] << " (Expected: 6.0)\n";
+    std::cout << "Memory Metrics:\n";
+    std::cout << "  Dense Memory:       " << res.dense_memory_bytes << " bytes\n";
+    std::cout << "  Sparse Memory:      " << res.sparse_memory_bytes << " bytes\n";
+    std::cout << "  Memory Reduction:   " << std::fixed << std::setprecision(2) << res.memory_savings_ratio << "x\n";
+    std::cout << "  Max Primal Residual:" << res.max_primal_residual << "\n";
+}
+
 int main() {
     std::cout << "=========================================================\n";
     std::cout << "               VORTEX OPTIMIZATION ENGINE                 \n";
-    std::cout << "      SIH26119 - Core, Simplex & Two-Phase Solver        \n";
+    std::cout << "  SIH26119 - Core, Simplex, Revised & Sparse Solver      \n";
     std::cout << "=========================================================\n\n";
 
     demo_linear_algebra();
     demo_simplex_optimization();
     demo_two_phase_simplex();
     demo_revised_simplex();
+    demo_sparse_engine();
 
     std::cout << "\n=========================================================\n";
     std::cout << " VORTEX Execution & Validation Completed Successfully!   \n";

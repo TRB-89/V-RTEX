@@ -5,6 +5,7 @@ VORTEX is an optimization engine developed for **SIH26119**.
 - **Phase 2**: Standard CPU Simplex LP Solver for $\le$ constraints with non-negative RHS.
 - **Phase 3**: General Two-Phase Simplex Solver supporting $\le, \ge, =$ constraints, negative RHS normalization, minimization and maximization, slack, surplus, and artificial variables, and infeasibility detection.
 - **Phase 4**: Revised Simplex Solver + LU Decomposition with partial pivoting, forward/backward substitution, basis matrix operations, reduced-cost calculations, and numerical stability checks.
+- **Phase 5**: Sparse Matrix Engine (CSR and CSC), SpMV, Dense-to-Sparse conversions, Sparse-Aware Revised Simplex with $O(nnz)$ column pricing, and memory/performance benchmarks.
 
 ---
 
@@ -17,23 +18,31 @@ vortex/
 │   ├── simplex.hpp             # Simplex LP solver header (Standard & Two-Phase)
 │   ├── revised_simplex.hpp     # Revised Simplex LP solver header
 │   ├── lu_decomposition.hpp    # LU decomposition header
+│   ├── sparse_matrix.hpp       # CSR and CSC sparse matrix templates
+│   ├── sparse_revised_simplex.hpp # Sparse Revised Simplex LP solver
 │   └── vortex/
 │       ├── matrix.hpp          # C++20 Matrix class template with concept constraints
 │       ├── simplex.hpp         # Forwarding header for namespace inclusion
 │       ├── revised_simplex.hpp # Revised Simplex LP solver header
-│       └── lu_decomposition.hpp# LU factorization with partial pivoting
+│       ├── lu_decomposition.hpp# LU factorization with partial pivoting
+│       ├── sparse_matrix.hpp   # CSR & CSC sparse matrix implementations
+│       └── sparse_revised_simplex.hpp # Sparse Revised Simplex solver
 ├── src/
 │   ├── simplex.cpp             # Simplex tableau implementation & Two-Phase logic
 │   ├── revised_simplex.cpp     # Revised Simplex solver & basis operations
-│   └── main.cpp                # CLI demo (Matrix math + Simplex + Two-Phase + Revised Simplex)
+│   ├── sparse_revised_simplex.cpp # Sparse Revised Simplex implementation
+│   └── main.cpp                # CLI demo (Phases 1-5)
 ├── tests/
 │   ├── test_matrix.cpp         # 19 automated unit tests for Matrix engine (Phase 1)
 │   ├── test_simplex.cpp        # 17 automated unit tests for Standard Simplex (Phase 2)
 │   ├── test_two_phase_simplex.cpp # 17 automated unit tests for Two-Phase Simplex (Phase 3)
 │   ├── test_lu_decomposition.cpp  # 24 automated unit tests for LU Decomposition (Phase 4)
-│   └── test_revised_simplex.cpp   # 31 automated unit tests for Revised Simplex (Phase 4)
+│   ├── test_revised_simplex.cpp   # 31 automated unit tests for Revised Simplex (Phase 4)
+│   ├── test_sparse_matrix.cpp     # 45 automated unit tests for Sparse Engine (Phase 5)
+│   └── test_sparse_revised_simplex.cpp # 21 automated unit tests for Sparse Simplex (Phase 5)
 ├── benchmarks/
-│   └── benchmark_matrix.cpp    # Performance benchmarks for Addition, Transpose, and GEMM
+│   ├── benchmark_matrix.cpp    # Dense Matrix performance benchmarks
+│   └── benchmark_sparse.cpp    # Sparse memory, SpMV, and pricing benchmarks
 └── docs/
     ├── ARCHITECTURE.md         # Architecture, mathematical foundations & memory specs
     └── BEGINNER_GUIDE.md       # Beginner guide to C++20, Matrix math & Two-Phase Simplex
@@ -50,17 +59,23 @@ cmake -B build -G "MinGW Makefiles"
 # 2. Compile all targets
 cmake --build build
 
-# 3. Run all unit tests via CTest (108 total tests across 5 suites)
+# 3. Run all unit tests via CTest (174 total tests across 7 suites)
 ctest --test-dir build --output-on-failure
 
 # 4. Run individual test suites
+.\build\vortex_sparse_revised_simplex_tests.exe
+.\build\vortex_sparse_matrix_tests.exe
 .\build\vortex_revised_simplex_tests.exe
 .\build\vortex_lu_tests.exe
 .\build\vortex_two_phase_tests.exe
 .\build\vortex_simplex_tests.exe
 .\build\vortex_tests.exe
 
-# 5. Run the CLI demo
+# 5. Run performance benchmarks
+.\build\vortex_sparse_benchmarks.exe
+.\build\vortex_benchmarks.exe
+
+# 6. Run the CLI demo
 .\build\vortex_cli.exe
 ```
 
