@@ -4,6 +4,7 @@
 #include "vortex/revised_simplex.hpp"
 #include "vortex/sparse_matrix.hpp"
 #include "vortex/sparse_revised_simplex.hpp"
+#include "vortex/milp.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -251,10 +252,59 @@ void demo_sparse_engine() {
     std::cout << "  Max Primal Residual:" << res.max_primal_residual << "\n";
 }
 
+void demo_milp() {
+    std::cout << "\n=========================================================\n";
+    std::cout << "  PART 6: Mixed-Integer Linear Programming (Phase 6)     \n";
+    std::cout << "=========================================================\n\n";
+
+    std::cout << "Solving 0-1 Binary Knapsack Problem:\n";
+    std::cout << "  Maximize   Z = 10x1 + 40x2 + 30x3 + 50x4\n";
+    std::cout << "  Subject to:  5x1 +  4x2 +  6x3 +  3x4 <= 10\n";
+    std::cout << "  Variable bounds: x_j in {0, 1}\n\n";
+
+    vortex::MixedIntegerLinearProgram knapsack;
+    knapsack.c = {10.0, 40.0, 30.0, 50.0};
+    knapsack.A = {
+        {5.0, 4.0, 6.0, 3.0}
+    };
+    knapsack.b = {10.0};
+    knapsack.constraint_types = {vortex::ConstraintType::LEQ};
+    knapsack.variable_types = {
+        vortex::VariableType::BINARY,
+        vortex::VariableType::BINARY,
+        vortex::VariableType::BINARY,
+        vortex::VariableType::BINARY
+    };
+    knapsack.bounds = {
+        {0.0, 1.0},
+        {0.0, 1.0},
+        {0.0, 1.0},
+        {0.0, 1.0}
+    };
+    knapsack.sense = vortex::ObjectiveSense::MAXIMIZE;
+
+    vortex::MILPSolver solver;
+    auto res = solver.solve(knapsack);
+
+    std::cout << "---------------- MILP Solver Results ----------------\n";
+    std::cout << "Status:             " << (res.status == vortex::MILPStatus::OPTIMAL ? "OPTIMAL" : "OTHER") << "\n";
+    std::cout << "Message:            " << res.message << "\n";
+    std::cout << "Optimal Z*:         " << std::fixed << std::setprecision(2) << res.objective_value << " (Expected: 90.00)\n";
+    std::cout << "Dual Best Bound:    " << res.best_bound << "\n";
+    std::cout << "Absolute Gap:       " << res.absolute_gap << "\n";
+    std::cout << "Nodes Explored:     " << res.nodes_explored << "\n";
+    std::cout << "Nodes Pruned Bound: " << res.nodes_pruned_bound << "\n";
+    std::cout << "Selected Items (x_j == 1):\n";
+    for (std::size_t j = 0; j < res.variable_values.size(); ++j) {
+        std::cout << "  x" << (j + 1) << " = " << std::setprecision(0) << res.variable_values[j]
+                  << (res.variable_values[j] > 0.5 ? " (SELECTED)" : " (rejected)") << "\n";
+    }
+}
+
 int main() {
     std::cout << "=========================================================\n";
     std::cout << "               VORTEX OPTIMIZATION ENGINE                 \n";
-    std::cout << "  SIH26119 - Core, Simplex, Revised & Sparse Solver      \n";
+    std::cout << "  SIH26119 - Core, Simplex, Revised, Sparse & MILP       \n";
     std::cout << "=========================================================\n\n";
 
     demo_linear_algebra();
@@ -262,6 +312,7 @@ int main() {
     demo_two_phase_simplex();
     demo_revised_simplex();
     demo_sparse_engine();
+    demo_milp();
 
     std::cout << "\n=========================================================\n";
     std::cout << " VORTEX Execution & Validation Completed Successfully!   \n";

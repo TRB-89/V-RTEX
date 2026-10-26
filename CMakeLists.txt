@@ -22,6 +22,7 @@ add_library(vortex_core STATIC
     src/simplex.cpp
     src/revised_simplex.cpp
     src/sparse_revised_simplex.cpp
+    src/milp.cpp
 )
 
 target_include_directories(vortex_core PUBLIC
@@ -81,6 +82,11 @@ add_test(NAME SparseRevisedSimplexUnitTests COMMAND vortex_sparse_revised_simple
 add_executable(vortex_numerical_audit_tests tests/test_numerical_audit.cpp)
 target_link_libraries(vortex_numerical_audit_tests PRIVATE vortex_core)
 add_test(NAME NumericalAuditTests COMMAND vortex_numerical_audit_tests)
+
+# Mixed-Integer Linear Programming Test Suite (Phase 6)
+add_executable(vortex_milp_tests tests/test_milp.cpp)
+target_link_libraries(vortex_milp_tests PRIVATE vortex_core)
+add_test(NAME MILPUnitTests COMMAND vortex_milp_tests)
 
 # ==============================================================================
 # Benchmarks Executables
