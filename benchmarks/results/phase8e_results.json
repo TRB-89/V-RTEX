@@ -1,0 +1,1142 @@
+{
+  "system_info": {
+    "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "compute_capability": "8.6",
+    "multiprocessor_count": 16,
+    "total_vram_bytes": 4294443008,
+    "available_vram_bytes": 3466277684,
+    "core_clock_khz": 1500000,
+    "memory_clock_khz": 6001000,
+    "memory_bus_width_bits": 128,
+    "cpu_name": "AMD Ryzen 5 6600H with Radeon Graphics (12 Threads)",
+    "compiler": "MSVC 1951",
+    "cuda_runtime_version": 13040,
+    "build_type": "Release",
+    "repetition_count": 15,
+    "warmup_count": 5
+  },
+  "benchmarks": [
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 128x128 Normal",
+      "rows": 128,
+      "cols": 128,
+      "nnz": 16384,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0117,
+        "min": 0.0116,
+        "max": 0.0118,
+        "mean": 0.01168,
+        "stddev": 6.76123e-05,
+        "iqr": 0.0001
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.01536
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.0578,
+        "min": 0.0561,
+        "max": 0.1068,
+        "mean": 0.0670067,
+        "stddev": 0.0148295,
+        "iqr": 0.0212
+      },
+      "speedup_compute": 0.761719,
+      "speedup_e2e": 0.202422,
+      "speedup_label": "0.20x (GPU slower)",
+      "max_absolute_error": 4.9738e-14,
+      "scaled_relative_error": 4.41582e-16,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 128x128 Transposed",
+      "rows": 128,
+      "cols": 128,
+      "nnz": 16384,
+      "density": 1,
+      "transpose": true,
+      "cpu_timing_ms": {
+        "median": 0.0327,
+        "min": 0.0245,
+        "max": 0.0379,
+        "mean": 0.03338,
+        "stddev": 0.00448938,
+        "iqr": 0.0069
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.016384
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.0621,
+        "min": 0.0611,
+        "max": 0.0672,
+        "mean": 0.0624733,
+        "stddev": 0.00146164,
+        "iqr": 0.001
+      },
+      "speedup_compute": 1.99585,
+      "speedup_e2e": 0.52657,
+      "speedup_label": "0.53x (GPU slower)",
+      "max_absolute_error": 5.68434e-14,
+      "scaled_relative_error": 5.84031e-16,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 512x512 Normal",
+      "rows": 512,
+      "cols": 512,
+      "nnz": 262144,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.1775,
+        "min": 0.1713,
+        "max": 0.1917,
+        "mean": 0.17828,
+        "stddev": 0.00651111,
+        "iqr": 0.0127
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.03072
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.246,
+        "min": 0.2404,
+        "max": 0.3697,
+        "mean": 0.255027,
+        "stddev": 0.0325479,
+        "iqr": 0.006
+      },
+      "speedup_compute": 5.77799,
+      "speedup_e2e": 0.721545,
+      "speedup_label": "0.72x (GPU slower)",
+      "max_absolute_error": 2.84217e-13,
+      "scaled_relative_error": 1.15317e-15,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 512x512 Transposed",
+      "rows": 512,
+      "cols": 512,
+      "nnz": 262144,
+      "density": 1,
+      "transpose": true,
+      "cpu_timing_ms": {
+        "median": 2.0868,
+        "min": 1.9057,
+        "max": 2.3138,
+        "mean": 2.09853,
+        "stddev": 0.126857,
+        "iqr": 0.2201
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.031744
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.2485,
+        "min": 0.2431,
+        "max": 0.2668,
+        "mean": 0.250413,
+        "stddev": 0.0068622,
+        "iqr": 0.0114
+      },
+      "speedup_compute": 65.7384,
+      "speedup_e2e": 8.39759,
+      "speedup_label": "8.40x (GPU faster)",
+      "max_absolute_error": 4.26326e-13,
+      "scaled_relative_error": 1.49478e-15,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 1024x1024 Normal",
+      "rows": 1024,
+      "cols": 1024,
+      "nnz": 1048576,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.8647,
+        "min": 0.763,
+        "max": 0.9888,
+        "mean": 0.846527,
+        "stddev": 0.0673324,
+        "iqr": 0.1105
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.08704
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.818,
+        "min": 0.7931,
+        "max": 0.9458,
+        "mean": 0.831,
+        "stddev": 0.0468443,
+        "iqr": 0.0245
+      },
+      "speedup_compute": 9.93451,
+      "speedup_e2e": 1.05709,
+      "speedup_label": "1.06x (GPU faster)",
+      "max_absolute_error": 5.68434e-13,
+      "scaled_relative_error": 1.61902e-15,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 1024x1024 Transposed",
+      "rows": 1024,
+      "cols": 1024,
+      "nnz": 1048576,
+      "density": 1,
+      "transpose": true,
+      "cpu_timing_ms": {
+        "median": 8.2551,
+        "min": 7.977,
+        "max": 8.624,
+        "mean": 8.23824,
+        "stddev": 0.186821,
+        "iqr": 0.3116
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.088064
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.822,
+        "min": 0.7869,
+        "max": 1.1431,
+        "mean": 0.858333,
+        "stddev": 0.0947733,
+        "iqr": 0.067
+      },
+      "speedup_compute": 93.7398,
+      "speedup_e2e": 10.0427,
+      "speedup_label": "10.04x (GPU faster)",
+      "max_absolute_error": 5.96856e-13,
+      "scaled_relative_error": 1.55661e-15,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 2048x2048 Normal",
+      "rows": 2048,
+      "cols": 2048,
+      "nnz": 4194304,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 3.4189,
+        "min": 3.1983,
+        "max": 3.7605,
+        "mean": 3.44818,
+        "stddev": 0.154036,
+        "iqr": 0.1821
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.260096
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 3.1614,
+        "min": 2.9791,
+        "max": 3.4634,
+        "mean": 3.19945,
+        "stddev": 0.160332,
+        "iqr": 0.2674
+      },
+      "speedup_compute": 13.1448,
+      "speedup_e2e": 1.08145,
+      "speedup_label": "1.08x (GPU faster)",
+      "max_absolute_error": 1.47793e-12,
+      "scaled_relative_error": 2.58549e-15,
+      "notes": ""
+    },
+    {
+      "category": "Dense GEMV",
+      "name": "Dense GEMV 2048x2048 Transposed",
+      "rows": 2048,
+      "cols": 2048,
+      "nnz": 4194304,
+      "density": 1,
+      "transpose": true,
+      "cpu_timing_ms": {
+        "median": 96.6248,
+        "min": 93.4529,
+        "max": 102.797,
+        "mean": 97.3851,
+        "stddev": 2.52576,
+        "iqr": 2.4928
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.274176
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 4.2618,
+        "min": 3.9166,
+        "max": 4.667,
+        "mean": 4.31832,
+        "stddev": 0.201518,
+        "iqr": 0.294
+      },
+      "speedup_compute": 352.419,
+      "speedup_e2e": 22.6723,
+      "speedup_label": "22.67x (GPU faster)",
+      "max_absolute_error": 1.42109e-12,
+      "scaled_relative_error": 2.67312e-15,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 1000x1000 (90% Sparse, Balanced)",
+      "rows": 1000,
+      "cols": 1000,
+      "nnz": 99793,
+      "density": 0.099793,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0529,
+        "min": 0.0483,
+        "max": 0.0887,
+        "mean": 0.05918,
+        "stddev": 0.0130316,
+        "iqr": 0.0237
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.05632
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.2314,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 0.939276,
+      "speedup_e2e": 0.228608,
+      "speedup_label": "0.23x (GPU slower)",
+      "max_absolute_error": 5.68434e-14,
+      "scaled_relative_error": 4.66382e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 1000x1000 (95% Sparse, Balanced)",
+      "rows": 1000,
+      "cols": 1000,
+      "nnz": 49837,
+      "density": 0.049837,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0352,
+        "min": 0.0351,
+        "max": 0.0354,
+        "mean": 0.03522,
+        "stddev": 7.74597e-05,
+        "iqr": 0.0001
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.04192
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.1566,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 0.839695,
+      "speedup_e2e": 0.224777,
+      "speedup_label": "0.22x (GPU slower)",
+      "max_absolute_error": 2.84217e-14,
+      "scaled_relative_error": 4.22757e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 1000x1000 (98% Sparse, Balanced)",
+      "rows": 1000,
+      "cols": 1000,
+      "nnz": 20007,
+      "density": 0.020007,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0083,
+        "min": 0.0082,
+        "max": 0.0086,
+        "mean": 0.00834,
+        "stddev": 9.10259e-05,
+        "iqr": 0.0001
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.025344
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.1141,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 0.327494,
+      "speedup_e2e": 0.0727432,
+      "speedup_label": "0.07x (GPU slower)",
+      "max_absolute_error": 1.42109e-14,
+      "scaled_relative_error": 2.55542e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 1000x1000 (99% Sparse, Balanced)",
+      "rows": 1000,
+      "cols": 1000,
+      "nnz": 10166,
+      "density": 0.010166,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0043,
+        "min": 0.0043,
+        "max": 0.0045,
+        "mean": 0.00434667,
+        "stddev": 6.3994e-05,
+        "iqr": 0.0001
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.03664
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.1226,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 0.117358,
+      "speedup_e2e": 0.0350734,
+      "speedup_label": "0.04x (GPU slower)",
+      "max_absolute_error": 1.06581e-14,
+      "scaled_relative_error": 2.64914e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 2000x2000 (95% Sparse, Balanced)",
+      "rows": 2000,
+      "cols": 2000,
+      "nnz": 199911,
+      "density": 0.0499778,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.1075,
+        "min": 0.1002,
+        "max": 0.108,
+        "mean": 0.1045,
+        "stddev": 0.00366119,
+        "iqr": 0.0073
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.05632
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.5499,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 1.90874,
+      "speedup_e2e": 0.19549,
+      "speedup_label": "0.20x (GPU slower)",
+      "max_absolute_error": 1.13687e-13,
+      "scaled_relative_error": 9.9499e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 2000x2000 (98% Sparse, Balanced)",
+      "rows": 2000,
+      "cols": 2000,
+      "nnz": 80055,
+      "density": 0.0200138,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0381,
+        "min": 0.0351,
+        "max": 0.0575,
+        "mean": 0.0392933,
+        "stddev": 0.00572132,
+        "iqr": 0.0039
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.047104
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.1989,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 0.808848,
+      "speedup_e2e": 0.191554,
+      "speedup_label": "0.19x (GPU slower)",
+      "max_absolute_error": 2.84217e-14,
+      "scaled_relative_error": 3.66039e-16,
+      "notes": ""
+    },
+    {
+      "category": "Sparse SpMV",
+      "name": "CSR SpMV 2000x2000 (98% Sparse, Irregular)",
+      "rows": 2000,
+      "cols": 2000,
+      "nnz": 58251,
+      "density": 0.0145627,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.0296,
+        "min": 0.0295,
+        "max": 0.0297,
+        "mean": 0.0296,
+        "stddev": 8.45154e-05,
+        "iqr": 0.0002
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0.028672
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.152,
+        "min": 0,
+        "max": 0,
+        "mean": 0,
+        "stddev": 0,
+        "iqr": 0
+      },
+      "speedup_compute": 1.03237,
+      "speedup_e2e": 0.194737,
+      "speedup_label": "0.19x (GPU slower)",
+      "max_absolute_error": 1.24345e-13,
+      "scaled_relative_error": 8.84801e-16,
+      "notes": ""
+    },
+    {
+      "category": "Data Transfer & Reuse",
+      "name": "Buffer Reuse 512x512",
+      "rows": 512,
+      "cols": 512,
+      "nnz": 262144,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 1.5605,
+        "min": 1.4141,
+        "max": 2.6155,
+        "mean": 1.61839,
+        "stddev": 0.283032,
+        "iqr": 0.0843
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.0547,
+        "min": 0.0538,
+        "max": 0.7682,
+        "mean": 0.103873,
+        "stddev": 0.183877,
+        "iqr": 0.0019
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 28.5283,
+      "speedup_label": "28.53x (GPU faster)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Persistent buffers save matrix re-transfer and allocation overhead"
+    },
+    {
+      "category": "Data Transfer & Reuse",
+      "name": "Buffer Reuse 1024x1024",
+      "rows": 1024,
+      "cols": 1024,
+      "nnz": 1048576,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 2.8719,
+        "min": 2.6629,
+        "max": 3.2689,
+        "mean": 2.90202,
+        "stddev": 0.195368,
+        "iqr": 0.2522
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.0954,
+        "min": 0.091,
+        "max": 0.4062,
+        "mean": 0.117933,
+        "stddev": 0.079965,
+        "iqr": 0.0096
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 30.1038,
+      "speedup_label": "30.10x (GPU faster)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Persistent buffers save matrix re-transfer and allocation overhead"
+    },
+    {
+      "category": "Data Transfer & Reuse",
+      "name": "Buffer Reuse 2048x2048",
+      "rows": 2048,
+      "cols": 2048,
+      "nnz": 4194304,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 7.8468,
+        "min": 7.5136,
+        "max": 8.9861,
+        "mean": 7.88503,
+        "stddev": 0.405466,
+        "iqr": 0.3805
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.2516,
+        "min": 0.2374,
+        "max": 0.5858,
+        "mean": 0.269187,
+        "stddev": 0.087827,
+        "iqr": 0.0136
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 31.1876,
+      "speedup_label": "31.19x (GPU faster)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Persistent buffers save matrix re-transfer and allocation overhead"
+    },
+    {
+      "category": "Simplex Pricing",
+      "name": "Simplex Pricing m=256, n=1024",
+      "rows": 256,
+      "cols": 1024,
+      "nnz": 262144,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 1.52903,
+        "min": 1.47236,
+        "max": 1.6996,
+        "mean": 1.55722,
+        "stddev": 0.0713791,
+        "iqr": 0.08319
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.058668,
+        "min": 0.052096,
+        "max": 0.065896,
+        "mean": 0.0588656,
+        "stddev": 0.00474138,
+        "iqr": 0.00931
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 26.0624,
+      "speedup_label": "26.06x (GPU faster)",
+      "max_absolute_error": 1.98952e-13,
+      "scaled_relative_error": 0,
+      "notes": ""
+    },
+    {
+      "category": "Simplex Pricing",
+      "name": "Simplex Pricing m=512, n=2048",
+      "rows": 512,
+      "cols": 2048,
+      "nnz": 1048576,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 21.8111,
+        "min": 21.4196,
+        "max": 21.9242,
+        "mean": 21.7946,
+        "stddev": 0.122731,
+        "iqr": 0.140148
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.09374,
+        "min": 0.089068,
+        "max": 1.05193,
+        "mean": 0.444285,
+        "stddev": 0.455162,
+        "iqr": 0.93391
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 232.676,
+      "speedup_label": "232.68x (GPU faster)",
+      "max_absolute_error": 3.97904e-13,
+      "scaled_relative_error": 0,
+      "notes": ""
+    },
+    {
+      "category": "Simplex Pricing",
+      "name": "Simplex Pricing m=1024, n=4096",
+      "rows": 1024,
+      "cols": 4096,
+      "nnz": 4194304,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 226.66,
+        "min": 226.037,
+        "max": 228.533,
+        "mean": 226.865,
+        "stddev": 0.63292,
+        "iqr": 0.927818
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 0.250486,
+        "min": 0.243082,
+        "max": 3.89553,
+        "mean": 0.695131,
+        "stddev": 1.1761,
+        "iqr": 0.003968
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 904.881,
+      "speedup_label": "904.88x (GPU faster)",
+      "max_absolute_error": 7.38964e-13,
+      "scaled_relative_error": 0,
+      "notes": ""
+    },
+    {
+      "category": "Full Solver: Dense LP",
+      "name": "Dense Revised Simplex LP (32x64)",
+      "rows": 32,
+      "cols": 64,
+      "nnz": 2048,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.5552,
+        "min": 0.5523,
+        "max": 0.5839,
+        "mean": 0.55818,
+        "stddev": 0.00793853,
+        "iqr": 0.0035
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 2.8071,
+        "min": 2.6438,
+        "max": 4.4323,
+        "mean": 3.02425,
+        "stddev": 0.532043,
+        "iqr": 0.5172
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.197784,
+      "speedup_label": "0.20x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 38, GPU pricing calls: 39"
+    },
+    {
+      "category": "Full Solver: Dense LP",
+      "name": "Dense Revised Simplex LP (64x128)",
+      "rows": 64,
+      "cols": 128,
+      "nnz": 8192,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 9.2465,
+        "min": 9.1758,
+        "max": 9.5085,
+        "mean": 9.25857,
+        "stddev": 0.0737602,
+        "iqr": 0.0411
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 14.5601,
+        "min": 14.0819,
+        "max": 16.6305,
+        "mean": 14.922,
+        "stddev": 0.900724,
+        "iqr": 1.0245
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.635057,
+      "speedup_label": "0.64x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 108, GPU pricing calls: 109"
+    },
+    {
+      "category": "Full Solver: Dense LP",
+      "name": "Dense Revised Simplex LP (128x256)",
+      "rows": 128,
+      "cols": 256,
+      "nnz": 32768,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 174.927,
+        "min": 173.821,
+        "max": 219.595,
+        "mean": 178.183,
+        "stddev": 11.5485,
+        "iqr": 1.6838
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 183.915,
+        "min": 180.589,
+        "max": 279.042,
+        "mean": 193.713,
+        "stddev": 25.7095,
+        "iqr": 15.5777
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.951125,
+      "speedup_label": "0.95x (Parity)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 287, GPU pricing calls: 288"
+    },
+    {
+      "category": "Full Solver: Dense LP",
+      "name": "Dense Revised Simplex LP (256x512)",
+      "rows": 256,
+      "cols": 512,
+      "nnz": 131072,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 5847.56,
+        "min": 5673.03,
+        "max": 6385.12,
+        "mean": 5930.42,
+        "stddev": 244.311,
+        "iqr": 383.67
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 6673.04,
+        "min": 6662.01,
+        "max": 6722.71,
+        "mean": 6678.53,
+        "stddev": 16.3324,
+        "iqr": 19.1098
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.876296,
+      "speedup_label": "0.88x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 1330, GPU pricing calls: 1331"
+    },
+    {
+      "category": "Full Solver: Sparse LP",
+      "name": "Sparse Revised Simplex LP (50x100, 95% Sparse)",
+      "rows": 50,
+      "cols": 100,
+      "nnz": 345,
+      "density": 0.069,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 2.0198,
+        "min": 1.9636,
+        "max": 2.5217,
+        "mean": 2.06965,
+        "stddev": 0.148918,
+        "iqr": 0.0249
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 7.7467,
+        "min": 7.3626,
+        "max": 8.9011,
+        "mean": 7.78733,
+        "stddev": 0.383678,
+        "iqr": 0.252
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.26073,
+      "speedup_label": "0.26x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 54, GPU SpMV calls: 55"
+    },
+    {
+      "category": "Full Solver: Sparse LP",
+      "name": "Sparse Revised Simplex LP (100x200, 95% Sparse)",
+      "rows": 100,
+      "cols": 200,
+      "nnz": 1195,
+      "density": 0.05975,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 56.4952,
+        "min": 56.3896,
+        "max": 57.2908,
+        "mean": 56.6376,
+        "stddev": 0.25363,
+        "iqr": 0.3428
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 76.9483,
+        "min": 76.1851,
+        "max": 98.816,
+        "mean": 80.8965,
+        "stddev": 7.48932,
+        "iqr": 11.3542
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.734197,
+      "speedup_label": "0.73x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 228, GPU SpMV calls: 229"
+    },
+    {
+      "category": "Full Solver: Sparse LP",
+      "name": "Sparse Revised Simplex LP (150x300, 98% Sparse)",
+      "rows": 150,
+      "cols": 300,
+      "nnz": 1195,
+      "density": 0.0265556,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 166.126,
+        "min": 165.295,
+        "max": 168.604,
+        "mean": 166.322,
+        "stddev": 0.913562,
+        "iqr": 1.2083
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 187.075,
+        "min": 184.673,
+        "max": 314.767,
+        "mean": 202.455,
+        "stddev": 38.7417,
+        "iqr": 8.2085
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.888023,
+      "speedup_label": "0.89x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 213, GPU SpMV calls: 214"
+    },
+    {
+      "category": "Full Solver: Sparse LP",
+      "name": "Sparse Revised Simplex LP (200x400, 98% Sparse)",
+      "rows": 200,
+      "cols": 400,
+      "nnz": 1949,
+      "density": 0.0243625,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 1003.35,
+        "min": 999.489,
+        "max": 1053.34,
+        "mean": 1006.84,
+        "stddev": 13.2952,
+        "iqr": 6.398
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 1069.24,
+        "min": 1058.62,
+        "max": 1232.62,
+        "mean": 1080.33,
+        "stddev": 43.5352,
+        "iqr": 15.4195
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.938377,
+      "speedup_label": "0.94x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 563, GPU SpMV calls: 564"
+    },
+    {
+      "category": "Full Solver: Convex QP",
+      "name": "Convex QP IPM (n=32, m=16)",
+      "rows": 16,
+      "cols": 32,
+      "nnz": 1536,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 0.4472,
+        "min": 0.4316,
+        "max": 0.8481,
+        "mean": 0.52786,
+        "stddev": 0.144566,
+        "iqr": 0.1798
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 7.9971,
+        "min": 7.8201,
+        "max": 14.0563,
+        "mean": 8.41305,
+        "stddev": 1.56725,
+        "iqr": 0.2391
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.0559203,
+      "speedup_label": "0.06x (GPU slower)",
+      "max_absolute_error": 0,
+      "scaled_relative_error": 0,
+      "notes": "Iters: 9, GPU GEMV calls: 60"
+    },
+    {
+      "category": "Full Solver: Convex QP",
+      "name": "Convex QP IPM (n=64, m=32)",
+      "rows": 32,
+      "cols": 64,
+      "nnz": 6144,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 2.9177,
+        "min": 2.8985,
+        "max": 2.9441,
+        "mean": 2.91833,
+        "stddev": 0.0107328,
+        "iqr": 0.0138
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 7.9228,
+        "min": 7.5886,
+        "max": 9.1906,
+        "mean": 8.03901,
+        "stddev": 0.414281,
+        "iqr": 0.6307
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.368266,
+      "speedup_label": "0.37x (GPU slower)",
+      "max_absolute_error": 2.66454e-15,
+      "scaled_relative_error": 5.35247e-16,
+      "notes": "Iters: 9, GPU GEMV calls: 60"
+    },
+    {
+      "category": "Full Solver: Convex QP",
+      "name": "Convex QP IPM (n=128, m=64)",
+      "rows": 64,
+      "cols": 128,
+      "nnz": 24576,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 28.3301,
+        "min": 27.9368,
+        "max": 28.9552,
+        "mean": 28.3925,
+        "stddev": 0.272163,
+        "iqr": 0.4802
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 38.1367,
+        "min": 32.8931,
+        "max": 42.1388,
+        "mean": 37.2097,
+        "stddev": 2.99019,
+        "iqr": 5.8729
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.742857,
+      "speedup_label": "0.74x (GPU slower)",
+      "max_absolute_error": 1.06581e-14,
+      "scaled_relative_error": 1.28751e-15,
+      "notes": "Iters: 10, GPU GEMV calls: 67"
+    },
+    {
+      "category": "Full Solver: Convex QP",
+      "name": "Convex QP IPM (n=256, m=128)",
+      "rows": 128,
+      "cols": 256,
+      "nnz": 98304,
+      "density": 1,
+      "transpose": false,
+      "cpu_timing_ms": {
+        "median": 392.957,
+        "min": 390.834,
+        "max": 399.433,
+        "mean": 393.499,
+        "stddev": 2.54252,
+        "iqr": 1.7308
+      },
+      "gpu_kernel_timing_ms": {
+        "median": 0
+      },
+      "gpu_e2e_timing_ms": {
+        "median": 405.167,
+        "min": 401.009,
+        "max": 426.688,
+        "mean": 406.414,
+        "stddev": 6.82243,
+        "iqr": 4.2625
+      },
+      "speedup_compute": 0,
+      "speedup_e2e": 0.969864,
+      "speedup_label": "0.97x (Parity)",
+      "max_absolute_error": 1.06581e-14,
+      "scaled_relative_error": 8.03393e-16,
+      "notes": "Iters: 11, GPU GEMV calls: 74"
+    }
+  ]
+}

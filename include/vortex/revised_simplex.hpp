@@ -3,6 +3,7 @@
 #include "vortex/matrix.hpp"
 #include "vortex/lu_decomposition.hpp"
 #include "simplex.hpp" // Reuse SolverStatus, PivotRule, ObjectiveSense, ConstraintType, LinearProgram
+#include "vortex/solver_backend.hpp"
 #include <vector>
 #include <string>
 #include <optional>
@@ -21,6 +22,7 @@ struct RevisedSimplexOptions {
     bool verbose{false};                        ///< Print iteration diagnostics to std::cout
     std::size_t refactor_interval{50};          ///< Re-factorize basis every N pivots
     double max_allowed_residual{1e-5};          ///< Numerical stability threshold
+    SolverBackend backend{SolverBackend::AUTO}; ///< Computation backend (CPU, GPU, AUTO)
 };
 
 /**
@@ -42,6 +44,7 @@ struct RevisedSimplexResult {
     double max_dual_residual{0.0};             ///< Max ||B^T * pi - c_B||_inf observed
     double basis_condition{0.0};               ///< Condition ratio of final basis matrix
     std::string message;                       ///< Status or diagnostic description
+    SolverDeviceDiagnostics device_diagnostics; ///< Telemetry on backend selection and GPU execution
 };
 
 /**

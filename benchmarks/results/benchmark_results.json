@@ -1,0 +1,173 @@
+{
+  "system_info": {
+    "compiler": "GCC 14.2.0",
+    "optimization_flags": "-O3 -DNDEBUG",
+    "cpu": "AMD Ryzen 5 6600H with Radeon Graphics (12 Threads)",
+    "os": "Windows 11 x86_64",
+    "acceleration": "CPU Single-Threaded (No GPU)"
+  },
+  "memory_audit": [
+    {
+      "dimension": "100x100",
+      "target_sparsity": 0.9,
+      "actual_sparsity": 0.8989,
+      "nnz": 1011,
+      "dense_logical_bytes": 80000,
+      "csr_logical_bytes": 16984,
+      "csr_capacity_bytes": 17280,
+      "csc_logical_bytes": 16984,
+      "combined_logical_bytes": 33968,
+      "savings_ratio": 4.71032
+    },
+    {
+      "dimension": "500x500",
+      "target_sparsity": 0.95,
+      "actual_sparsity": 0.950164,
+      "nnz": 12459,
+      "dense_logical_bytes": 2000000,
+      "csr_logical_bytes": 203352,
+      "csr_capacity_bytes": 266240,
+      "csc_logical_bytes": 203352,
+      "combined_logical_bytes": 406704,
+      "savings_ratio": 9.83516
+    },
+    {
+      "dimension": "1000x1000",
+      "target_sparsity": 0.98,
+      "actual_sparsity": 0.980027,
+      "nnz": 19973,
+      "dense_logical_bytes": 8000000,
+      "csr_logical_bytes": 327576,
+      "csr_capacity_bytes": 532384,
+      "csc_logical_bytes": 327576,
+      "combined_logical_bytes": 655152,
+      "savings_ratio": 24.4218
+    },
+    {
+      "dimension": "2000x2000",
+      "target_sparsity": 0.995,
+      "actual_sparsity": 0.995012,
+      "nnz": 19951,
+      "dense_logical_bytes": 32000000,
+      "csr_logical_bytes": 335224,
+      "csr_capacity_bytes": 540384,
+      "csc_logical_bytes": 335224,
+      "combined_logical_bytes": 670448,
+      "savings_ratio": 95.4586
+    }
+  ],
+  "format_conversions": [
+    {
+      "operation": "Triplets -> CSR",
+      "dimension": 1000,
+      "sparsity": 0.98,
+      "nnz": 19868,
+      "median_us": 619.1,
+      "min_us": 586,
+      "max_us": 656.1
+    },
+    {
+      "operation": "Dense -> CSR",
+      "dimension": 1000,
+      "sparsity": 0.98,
+      "nnz": 19868,
+      "median_us": 932.3,
+      "min_us": 833.7,
+      "max_us": 960.3
+    },
+    {
+      "operation": "Dense -> CSC",
+      "dimension": 1000,
+      "sparsity": 0.98,
+      "nnz": 19868,
+      "median_us": 1187.8,
+      "min_us": 1162.3,
+      "max_us": 1239.9
+    },
+    {
+      "operation": "CSR -> CSC",
+      "dimension": 1000,
+      "sparsity": 0.98,
+      "nnz": 19868,
+      "median_us": 147.1,
+      "min_us": 134.2,
+      "max_us": 155.9
+    }
+  ],
+  "spmv_density_sweep": [
+    {
+      "density": 1,
+      "sparsity": 0,
+      "nnz": 1000000,
+      "dense_median_us": 665.695,
+      "csr_median_us": 957.885,
+      "csc_median_us": 738.142,
+      "csr_speedup": 0.694963
+    },
+    {
+      "density": 0.5,
+      "sparsity": 0.50039,
+      "nnz": 499610,
+      "dense_median_us": 714.861,
+      "csr_median_us": 390.879,
+      "csc_median_us": 231.457,
+      "csr_speedup": 1.82885
+    },
+    {
+      "density": 0.1,
+      "sparsity": 0.90003,
+      "nnz": 99970,
+      "dense_median_us": 667.914,
+      "csr_median_us": 50.809,
+      "csc_median_us": 46.477,
+      "csr_speedup": 13.1456
+    },
+    {
+      "density": 0.02,
+      "sparsity": 0.979968,
+      "nnz": 20032,
+      "dense_median_us": 664.855,
+      "csr_median_us": 8.833,
+      "csc_median_us": 10.432,
+      "csr_speedup": 75.2694
+    },
+    {
+      "density": 0.005,
+      "sparsity": 0.995039,
+      "nnz": 4961,
+      "dense_median_us": 662.781,
+      "csr_median_us": 2.345,
+      "csc_median_us": 2.749,
+      "csr_speedup": 282.636
+    },
+    {
+      "density": 0.001,
+      "sparsity": 0.998993,
+      "nnz": 1007,
+      "dense_median_us": 662.491,
+      "csr_median_us": 1.078,
+      "csc_median_us": 1.053,
+      "csr_speedup": 614.556
+    }
+  ],
+  "pricing_microbenchmark": {
+    "rows": 400,
+    "cols": 1500,
+    "sparsity": 0.97,
+    "dense_median_us": 390.541,
+    "sparse_median_us": 9.433,
+    "speedup": 41.4015
+  },
+  "lp_solver_benchmark": {
+    "vars": 100,
+    "constraints": 100,
+    "sparsity": 0.9702,
+    "dense_median_ms": 10.8131,
+    "sparse_median_ms": 8.1614,
+    "speedup": 1.32491,
+    "dense_objective": 1015,
+    "sparse_objective": 1015,
+    "dense_iterations": 70,
+    "sparse_iterations": 70
+  }
+}

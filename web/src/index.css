@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0C0D13;
+  color: #E7E8EF;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Architectural Grid & Background Overlays */
+.bg-grid-pattern {
+  background-size: 48px 48px;
+  background-image: 
+    linear-gradient(to right, rgba(42, 42, 56, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(42, 42, 56, 0.25) 1px, transparent 1px);
+}
+
+.bg-subtle-radial {
+  background: radial-gradient(circle at 65% 35%, rgba(37, 20, 237, 0.08) 0%, rgba(12, 13, 19, 0) 70%);
+}
+
+.architectural-divider {
+  border-color: rgba(42, 42, 56, 0.45);
+}
+
+/* Custom Minimalist Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0C0D13;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #232332;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3C3C50;
+}
+
+/* Subtle Film Grain Effect */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Monospace Scientific Telemetry Badge */
+.telemetry-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Matrix Heatmap Cell */
+.matrix-cell {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.matrix-cell:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  box-shadow: 0 0 12px rgba(37, 20, 237, 0.5);
+}
