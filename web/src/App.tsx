@@ -101,7 +101,7 @@ export const App: React.FC = () => {
         )}
 
         {/* Workspace: preserved across tab switches */}
-        <div className={activeTab === 'workspace' ? 'pt-16' : 'hidden'}>
+        <div className={activeTab === 'workspace' ? 'pt-14' : 'hidden'}>
           <OptimizationWorkspace
             presets={presets}
             activeResult={activeResult}
@@ -113,7 +113,7 @@ export const App: React.FC = () => {
         </div>
 
         {activeTab === 'matrix' && (
-          <div className="pt-16">
+          <div className="pt-14">
             <MatrixInspector 
               activeResult={activeResult} 
               formulation={problemFormulation}
@@ -122,7 +122,7 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'convergence' && (
-          <div className="pt-16">
+          <div className="pt-14">
             <ConvergenceLab 
               activeResult={activeResult} 
               formulation={problemFormulation}
@@ -133,7 +133,7 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'benchmarks' && (
-          <div className="pt-16">
+          <div className="pt-14">
             <GpuPerformanceLab benchmarkData={benchmarkData} />
           </div>
         )}

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Cpu, Zap, Activity, Eye, Sliders, BarChart3, Terminal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, Menu, X, ArrowUpRight } from 'lucide-react';
 import type { ApiCapabilitiesResponse, ApiHealthResponse } from '../api/client';
 
 interface NavbarProps {
@@ -21,156 +21,150 @@ export const Navbar: React.FC<NavbarProps> = ({
   setReducedMotion,
   onLaunchSolver,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isCudaReady = capabilities?.cuda?.available;
-  const isOnline = health?.status === 'online';
+  const isOnline = health?.status === 'online' || health?.status === 'healthy';
+
+  const navItems: Array<{ id: 'overview' | 'workspace' | 'matrix' | 'convergence' | 'benchmarks'; label: string }> = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'workspace', label: 'Solver' },
+    { id: 'matrix', label: 'Matrix' },
+    { id: 'convergence', label: 'Convergence' },
+    { id: 'benchmarks', label: 'Performance' },
+  ];
+
+  const handleTabClick = (id: 'overview' | 'workspace' | 'matrix' | 'convergence' | 'benchmarks') => {
+    setActiveTab(id);
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-obsidian/90 backdrop-blur-md border-b border-graphite-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#08080C]/90 backdrop-blur-md border-b border-[#48494D]/25 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         
-        {/* Brand / Logo */}
-        <div className="flex items-center space-x-4 cursor-pointer" onClick={() => setActiveTab('overview')}>
-          <div className="w-8 h-8 rounded-sm bg-obsidian-surface border border-electric/40 flex items-center justify-center relative group">
-            <div className="w-3 h-3 border border-chrome rotate-45 group-hover:border-electric transition-colors" />
-            <div className="absolute inset-0 bg-electric/10 blur-[6px] rounded-sm pointer-events-none" />
+        {/* Brand Logo & Editorial Wordmark */}
+        <div 
+          className="flex items-center space-x-3 cursor-pointer group"
+          onClick={() => handleTabClick('overview')}
+        >
+          {/* Minimalist Monolith Symbol */}
+          <div className="w-5 h-5 border border-silver/70 rotate-45 flex items-center justify-center transition-transform duration-300 group-hover:rotate-90 group-hover:border-white">
+            <div className="w-1.5 h-1.5 bg-silver" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-lg tracking-wider text-chrome flex items-center gap-1.5">
+
+          <div className="flex items-baseline space-x-2">
+            <span className="font-display font-bold text-sm tracking-wider text-silver group-hover:text-white transition-colors">
               VØRTEX
-              <span className="text-[10px] font-mono tracking-normal text-violet-muted border border-graphite-border px-1.5 py-0.5 rounded-sm">
-                v3.0.0
-              </span>
             </span>
-            <span className="text-[9px] font-mono text-violet-muted tracking-widest uppercase">
-              C++20 · CUDA 13.4 · FP64
+            <span className="text-[10px] font-mono text-ash tracking-widest hidden sm:inline">
+              SYS·2026
             </span>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center space-x-1 font-mono text-xs">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 ${
-              activeTab === 'overview'
-                ? 'text-chrome bg-graphite-light border border-graphite-muted'
-                : 'text-violet-muted hover:text-chrome hover:bg-graphite/40'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            Overview
-          </button>
-
-          <button
-            onClick={() => setActiveTab('workspace')}
-            className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 ${
-              activeTab === 'workspace'
-                ? 'text-chrome bg-graphite-light border border-graphite-muted'
-                : 'text-violet-muted hover:text-chrome hover:bg-graphite/40'
-            }`}
-          >
-            <Terminal className="w-3.5 h-3.5" />
-            Solver API (Phase 9B)
-          </button>
-
-          <button
-            onClick={() => setActiveTab('matrix')}
-            className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 ${
-              activeTab === 'matrix'
-                ? 'text-chrome bg-graphite-light border border-graphite-muted'
-                : 'text-violet-muted hover:text-chrome hover:bg-graphite/40'
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            Matrix Inspector
-          </button>
-
-          <button
-            onClick={() => setActiveTab('convergence')}
-            className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 ${
-              activeTab === 'convergence'
-                ? 'text-chrome bg-graphite-light border border-graphite-muted'
-                : 'text-violet-muted hover:text-chrome hover:bg-graphite/40'
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            Convergence Lab
-          </button>
-
-          <button
-            onClick={() => setActiveTab('benchmarks')}
-            className={`px-3 py-1.5 rounded-sm transition-all flex items-center gap-1.5 ${
-              activeTab === 'benchmarks'
-                ? 'text-chrome bg-graphite-light border border-graphite-muted'
-                : 'text-violet-muted hover:text-chrome hover:bg-graphite/40'
-            }`}
-          >
-            <BarChart3 className="w-3.5 h-3.5" />
-            Performance Lab
-          </button>
+        {/* Swiss Minimal Navigation Links */}
+        <nav className="hidden md:flex items-center space-x-8 text-xs font-sans tracking-wide">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleTabClick(item.id)}
+                className={`relative py-1 transition-colors duration-150 ${
+                  isActive
+                    ? 'text-silver font-medium'
+                    : 'text-ash hover:text-silver'
+                }`}
+              >
+                {item.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[1px] bg-silver" />
+                )}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Right Section: Real Hardware & Health Status Pills & CTA */}
-        <div className="flex items-center space-x-3">
+        {/* Right Section: Telemetry Indicators & Restrained Outlined CTA */}
+        <div className="hidden sm:flex items-center space-x-4">
           
+          {/* Architecture / CUDA Status Tag */}
+          <div className="flex items-center space-x-2 text-[10px] font-mono text-ash px-2 py-0.5 border border-steel/30">
+            <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-silver' : 'bg-ash/50'}`} />
+            <span>{isCudaReady ? 'CUDA SM_86' : 'CPU HOST'}</span>
+          </div>
+
           {/* Reduced Motion Toggle */}
           <button
             onClick={() => setReducedMotion(!reducedMotion)}
-            title={reducedMotion ? "Enable 3D Motion" : "Reduce 3D Motion (Performance Mode)"}
-            className={`px-2 py-1 text-[11px] font-mono border rounded-sm transition-colors flex items-center gap-1 ${
-              reducedMotion
-                ? 'border-electric text-electric bg-electric/10'
-                : 'border-graphite-border text-violet-muted hover:text-chrome'
+            title={reducedMotion ? "3D motion disabled. Click to enable." : "3D motion active. Click to reduce."}
+            className={`p-1.5 text-xs transition-colors border ${
+              reducedMotion 
+                ? 'border-electric text-electric' 
+                : 'border-steel/30 text-ash hover:text-silver hover:border-steel/60'
             }`}
           >
-            <Activity className="w-3 h-3" />
-            <span className="hidden sm:inline">{reducedMotion ? 'Static 3D' : 'Dynamic 3D'}</span>
+            <Activity className="w-3.5 h-3.5" />
           </button>
 
-          {/* API Health Pill */}
-          <div className="hidden sm:flex items-center space-x-1.5 px-2 py-1 bg-obsidian-surface border border-graphite-border rounded-sm font-mono text-[11px]">
-            {isOnline ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-400 font-medium">API v1</span>
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                <span className="text-rose-400 font-medium">API Offline</span>
-              </>
-            )}
-          </div>
-
-          {/* Real-time Hardware Telemetry Pill */}
-          <div className="hidden lg:flex items-center space-x-2 px-2.5 py-1 bg-obsidian-surface border border-graphite-border rounded-sm font-mono text-[11px]">
-            {isCudaReady ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-chrome font-medium">CUDA SM_86</span>
-                <span className="text-violet-muted truncate max-w-[120px]">
-                  {capabilities?.cuda?.device_name?.split(' ')[1] || 'RTX 3050'}
-                </span>
-              </>
-            ) : (
-              <>
-                <Cpu className="w-3.5 h-3.5 text-violet-muted" />
-                <span className="text-violet-muted">CPU Host Active</span>
-              </>
-            )}
-          </div>
-
-          {/* Launch Solver Action Button */}
+          {/* Restrained Outlined Launch Solver CTA */}
           <button
             onClick={onLaunchSolver}
-            className="px-3.5 py-1.5 bg-electric hover:bg-electric-glow active:bg-electric-deep text-white font-mono text-xs font-medium tracking-wider rounded-sm transition-all duration-150 flex items-center gap-1.5 shadow-[0_0_15px_rgba(37,20,237,0.35)]"
+            className="group px-3.5 py-1.5 border border-silver/60 hover:border-silver text-silver hover:text-white hover:bg-silver/5 font-mono text-xs tracking-wider uppercase transition-all duration-200 flex items-center space-x-1.5"
           >
-            <Zap className="w-3.5 h-3.5" />
-            <span>SOLVE</span>
+            <span>Launch Solver</span>
+            <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
+        </div>
+
+        {/* Mobile Hamburger Toggle */}
+        <div className="flex items-center space-x-2 md:hidden">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 text-ash hover:text-silver border border-steel/30"
+          >
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
 
       </div>
+
+      {/* Mobile Dropdown Panel */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#08080C] border-b border-steel/30 px-4 py-4 space-y-3 font-mono text-xs">
+          <div className="grid grid-cols-2 gap-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleTabClick(item.id)}
+                className={`text-left p-2 border ${
+                  activeTab === item.id
+                    ? 'border-silver text-silver bg-charcoal'
+                    : 'border-steel/30 text-ash'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="pt-2 flex items-center justify-between border-t border-steel/20">
+            <span className="text-[10px] text-ash">
+              {isCudaReady ? 'CUDA SM_86 ACTIVE' : 'CPU HOST ACTIVE'}
+            </span>
+            <button
+              onClick={() => {
+                onLaunchSolver();
+                setMobileMenuOpen(false);
+              }}
+              className="px-3 py-1 border border-silver text-silver hover:bg-silver/10 text-xs uppercase"
+            >
+              Launch Solver →
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
+

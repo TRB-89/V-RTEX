@@ -7,57 +7,101 @@
 }
 
 body {
-  background-color: #0C0D13;
-  color: #E7E8EF;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #08080C;
+  color: #E7E8EA;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "kern";
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Architectural Grid & Background Overlays */
-.bg-grid-pattern {
-  background-size: 48px 48px;
+/* Atmospheric Geological Landscape & Horizon Layer */
+.cinematic-horizon {
+  background: 
+    linear-gradient(180deg, rgba(8, 8, 12, 0.1) 0%, rgba(8, 8, 12, 0.85) 75%, #08080C 100%),
+    radial-gradient(ellipse 90% 50% at 50% 10%, rgba(153, 154, 158, 0.12) 0%, rgba(27, 28, 32, 0.4) 45%, rgba(8, 8, 12, 0.95) 80%);
+}
+
+.terrain-silhouette {
+  background: radial-gradient(ellipse 120% 40% at 50% 90%, rgba(27, 28, 32, 0.95) 0%, rgba(8, 8, 12, 1) 75%);
+}
+
+/* Swiss Architectural Grid & Lines */
+.bg-grid-architectural {
+  background-size: 64px 64px;
   background-image: 
-    linear-gradient(to right, rgba(42, 42, 56, 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(42, 42, 56, 0.25) 1px, transparent 1px);
+    linear-gradient(to right, rgba(72, 73, 77, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(72, 73, 77, 0.12) 1px, transparent 1px);
 }
 
-.bg-subtle-radial {
-  background: radial-gradient(circle at 65% 35%, rgba(37, 20, 237, 0.08) 0%, rgba(12, 13, 19, 0) 70%);
+.fine-line {
+  border-color: rgba(72, 73, 77, 0.35);
 }
 
-.architectural-divider {
-  border-color: rgba(42, 42, 56, 0.45);
+.fine-line-hover {
+  transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
-/* Custom Minimalist Scrollbars */
+.fine-line-hover:hover {
+  border-color: rgba(153, 154, 158, 0.6);
+  background-color: rgba(27, 28, 32, 0.6);
+}
+
+/* Custom Minimalist Monochrome Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0C0D13;
+  background: #08080C;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #232332;
-  border-radius: 3px;
+  background: #25262B;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3C3C50;
+  background: #48494D;
 }
 
-/* Subtle Film Grain Effect */
+/* Subtle Film Grain */
 .noise-overlay {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.025'/%3E%3C/svg%3E");
 }
 
-/* Monospace Scientific Telemetry Badge */
+/* Orbital Rings Keyframe Rotation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse-slow {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-orbital {
+  animation: spin-slow 90s linear infinite;
+}
+
+.animate-spin-orbital-rev {
+  animation: spin-reverse-slow 120s linear infinite;
+}
+
+/* Monospace Scientific Tag */
 .telemetry-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.6875rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
@@ -69,5 +113,5 @@ body {
 .matrix-cell:hover {
   transform: scale(1.15);
   z-index: 10;
-  box-shadow: 0 0 12px rgba(37, 20, 237, 0.5);
+  box-shadow: 0 0 10px rgba(231, 232, 234, 0.35);
 }
