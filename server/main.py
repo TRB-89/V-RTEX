@@ -502,6 +502,12 @@ async def solve_optimization_problem(req: SolveRequestV1):
                 "sense": req.sense,
             }
 
+            # Document fallback reason if GPU was requested but executed on CPU
+            diag = result.get("device_diagnostics")
+            if diag and diag.get("requested_backend") == "GPU" and "CPU" in diag.get("executed_backend", ""):
+                if not diag.get("fallback_reason"):
+                    diag["fallback_reason"] = "Formulation or small problem size routed to CPU host to avoid PCIe transfer overhead"
+
             return result
 
         finally:

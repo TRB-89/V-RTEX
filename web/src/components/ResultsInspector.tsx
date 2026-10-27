@@ -11,10 +11,12 @@ import {
   Cpu,
   Layers,
   Activity,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Printer
 } from 'lucide-react';
 import type { SolverResult } from '../types/solver';
 import type { VariableDef, ConstraintDef } from './MathematicalPreview';
+import { generateVortexPdfReport } from '../utils/pdfExport';
 
 interface ResultsInspectorProps {
   result: SolverResult | null;
@@ -160,6 +162,13 @@ export const ResultsInspector: React.FC<ResultsInspectorProps> = ({
               className="p-1 hover:bg-graphite text-violet-muted hover:text-chrome rounded-sm transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              onClick={() => generateVortexPdfReport(result, variables, constraints)}
+              title="Download PDF Research Report"
+              className="p-1 hover:bg-graphite text-electric hover:text-white rounded-sm transition-colors"
+            >
+              <Printer className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleDownloadCsv}
