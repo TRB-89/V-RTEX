@@ -5,6 +5,7 @@
 #include "vortex/sparse_matrix.hpp"
 #include "vortex/sparse_revised_simplex.hpp"
 #include "vortex/milp.hpp"
+#include "vortex/qp.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -301,10 +302,71 @@ void demo_milp() {
     }
 }
 
+void demo_quadratic_programming() {
+    std::cout << "\n=========================================================\n";
+    std::cout << "  PART 7: Convex Quadratic Programming (Phase 7)        \n";
+    std::cout << "=========================================================\n\n";
+
+    std::cout << "Solving Constrained Portfolio / Convex QP Problem:\n";
+    std::cout << "  Minimize   (1/2) * (2*x1^2 + 2*x2^2) - 2*x1 - 5*x2\n";
+    std::cout << "  Subject to:   x1 -   x2 <= 2\n";
+    std::cout << "                x1 + 2*x2 <= 6\n";
+    std::cout << "                -x1       <= 0  (x1 >= 0)\n";
+    std::cout << "                     -x2  <= 0  (x2 >= 0)\n\n";
+
+    vortex::QuadraticProgram qp;
+    qp.Q = {
+        {2.0, 0.0},
+        {0.0, 2.0}
+    };
+    qp.c = {-2.0, -5.0};
+    qp.A = {
+        { 1.0, -1.0},
+        { 1.0,  2.0},
+        {-1.0,  0.0},
+        { 0.0, -1.0}
+    };
+    qp.b = {2.0, 6.0, 0.0, 0.0};
+
+    vortex::QPOptions options;
+    options.verbose = false;
+
+    vortex::ConvexQPSolver solver(options);
+    vortex::QPResult res = solver.solve(qp);
+
+    std::string status_str;
+    switch (res.status) {
+        case vortex::QPSolverStatus::OPTIMAL: status_str = "OPTIMAL"; break;
+        case vortex::QPSolverStatus::MAX_ITERATIONS: status_str = "MAX_ITERATIONS"; break;
+        case vortex::QPSolverStatus::NUMERICAL_ERROR: status_str = "NUMERICAL_ERROR"; break;
+        case vortex::QPSolverStatus::UNBOUNDED: status_str = "UNBOUNDED"; break;
+        case vortex::QPSolverStatus::INFEASIBLE: status_str = "INFEASIBLE"; break;
+        case vortex::QPSolverStatus::INVALID_INPUT: status_str = "INVALID_INPUT"; break;
+        case vortex::QPSolverStatus::UNSUPPORTED: status_str = "UNSUPPORTED"; break;
+    }
+
+    std::cout << "---------------- QP Solver Results ----------------\n";
+    std::cout << "Status:             " << status_str << "\n";
+    std::cout << "Message:            " << res.message << "\n";
+    std::cout << "Optimal Objective:  " << std::fixed << std::setprecision(4) << res.objective_value << " (Expected: -7.2500)\n";
+    std::cout << "Interior Iterations:" << res.iterations << "\n";
+    std::cout << "Primal Residual:    " << std::scientific << res.primal_residual << "\n";
+    std::cout << "Dual Residual:      " << res.dual_residual << "\n";
+    std::cout << "Duality Gap:        " << res.duality_gap << std::fixed << "\n";
+    std::cout << "Optimal Primal Variables:\n";
+    std::cout << "  x1 = " << std::setprecision(4) << res.x[0] << " (Expected: 1.0000)\n";
+    std::cout << "  x2 = " << std::setprecision(4) << res.x[1] << " (Expected: 2.5000)\n";
+    std::cout << "Dual Multipliers (lambda):\n";
+    for (std::size_t i = 0; i < res.lambda.size(); ++i) {
+        std::cout << "  lambda[" << i << "] = " << std::scientific << res.lambda[i]
+                  << " (slack = " << res.slack[i] << ")\n";
+    }
+}
+
 int main() {
     std::cout << "=========================================================\n";
     std::cout << "               VORTEX OPTIMIZATION ENGINE                 \n";
-    std::cout << "  SIH26119 - Core, Simplex, Revised, Sparse & MILP       \n";
+    std::cout << "   SIH26119 - Core, Simplex, Revised, Sparse, MILP & QP  \n";
     std::cout << "=========================================================\n\n";
 
     demo_linear_algebra();
@@ -313,6 +375,7 @@ int main() {
     demo_revised_simplex();
     demo_sparse_engine();
     demo_milp();
+    demo_quadratic_programming();
 
     std::cout << "\n=========================================================\n";
     std::cout << " VORTEX Execution & Validation Completed Successfully!   \n";
@@ -320,4 +383,5 @@ int main() {
 
     return 0;
 }
+
 

@@ -1,8 +1,10 @@
 #include "vortex/revised_simplex.hpp"
+#include "vortex/cuda_backend.hpp"
 #include <limits>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
+#include <memory>
 
 namespace vortex {
 
@@ -264,9 +266,84 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
     std::size_t max_iters) {
 
     const std::size_t m = A_std.rows();
+    [[maybe_unused]] const std::size_t n = A_std.cols();
     RevisedSimplexResult result;
     result.iterations = 0;
     result.basis_indices = basis;
+    result.device_diagnostics.requested_backend = options_.backend;
+
+    [[maybe_unused]] bool use_gpu = false;
+    if (options_.backend == SolverBackend::GPU) {
+#if defined(VORTEX_ENABLE_CUDA)
+        if (!cuda::is_cuda_available()) {
+            result.status = SolverStatus::INVALID_INPUT;
+            result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+            result.device_diagnostics.fallback_reason = "GPU backend requested but no CUDA device is available.";
+            result.message = result.device_diagnostics.fallback_reason;
+            return result;
+        }
+        use_gpu = true;
+#else
+        result.status = SolverStatus::INVALID_INPUT;
+        result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+        result.device_diagnostics.fallback_reason = "GPU backend requested but VORTEX was compiled without CUDA.";
+        result.message = result.device_diagnostics.fallback_reason;
+        return result;
+#endif
+    } else if (options_.backend == SolverBackend::AUTO) {
+#if defined(VORTEX_ENABLE_CUDA)
+        if (cuda::is_cuda_available() && m >= 32 && n >= 32 && (m * n) >= 4096) {
+            use_gpu = true;
+        } else {
+            use_gpu = false;
+            result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+            if (!cuda::is_cuda_available()) {
+                result.device_diagnostics.fallback_reason = "CUDA not available on system; AUTO selected CPU.";
+            } else {
+                result.device_diagnostics.fallback_reason = "Problem dimension (" + std::to_string(m) + "x" + std::to_string(n) +
+                    ", " + std::to_string(m * n) + " elements) below GPU acceleration threshold (m >= 32, n >= 32, m*n >= 4096); AUTO selected CPU.";
+            }
+        }
+#else
+        use_gpu = false;
+        result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+        result.device_diagnostics.fallback_reason = "VORTEX compiled without CUDA; AUTO selected CPU.";
+#endif
+    } else {
+        result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+    }
+
+#if defined(VORTEX_ENABLE_CUDA)
+    std::unique_ptr<cuda::GpuDensePricingContext> gpu_ctx;
+    if (use_gpu) {
+        try {
+            gpu_ctx = std::make_unique<cuda::GpuDensePricingContext>(A_std);
+            result.device_diagnostics.executed_backend = ExecutedBackend::HYBRID;
+        } catch (const std::exception& e) {
+            if (options_.backend == SolverBackend::GPU) {
+                result.status = SolverStatus::INVALID_INPUT;
+                result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+                result.device_diagnostics.fallback_reason = "GPU initialization failed: " + std::string(e.what());
+                result.message = result.device_diagnostics.fallback_reason;
+                return result;
+            } else {
+                use_gpu = false;
+                result.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+                result.device_diagnostics.fallback_reason = "GPU initialization failed (" + std::string(e.what()) + "); AUTO falling back to CPU.";
+            }
+        }
+    }
+#endif
+
+    auto finalize_diagnostics = [&]() {
+#if defined(VORTEX_ENABLE_CUDA)
+        if (use_gpu && gpu_ctx) {
+            result.device_diagnostics.gpu_gemv_calls = gpu_ctx->gemv_calls();
+            result.device_diagnostics.h2d_transfers = gpu_ctx->h2d_transfers();
+            result.device_diagnostics.d2h_transfers = gpu_ctx->d2h_transfers();
+        }
+#endif
+    };
 
     LUDecomposition<double> lu;
 
@@ -278,6 +355,7 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
         if (!non_singular || lu.is_singular()) {
             result.status = SolverStatus::INVALID_INPUT;
             result.message = "Revised Simplex error: Basis matrix is singular or ill-conditioned.";
+            finalize_diagnostics();
             return result;
         }
 
@@ -304,7 +382,17 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
         result.basis_condition = lu.condition_ratio();
 
         // 5. Pricing: compute reduced costs c_bar_j = c_j - pi^T * A_j
-        std::vector<double> reduced_costs = compute_reduced_costs(c_std, A_std, pi);
+        std::vector<double> reduced_costs;
+#if defined(VORTEX_ENABLE_CUDA)
+        if (use_gpu && gpu_ctx) {
+            gpu_ctx->compute_reduced_costs(c_std, pi, reduced_costs);
+            result.device_diagnostics.gpu_iterations++;
+        } else {
+            reduced_costs = compute_reduced_costs(c_std, A_std, pi);
+        }
+#else
+        reduced_costs = compute_reduced_costs(c_std, A_std, pi);
+#endif
 
         // 6. Select entering variable
         int entering_var = select_entering_variable(reduced_costs, basis, allowed_variables);
@@ -321,6 +409,7 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
                 z += c_B[i] * x_B[i];
             }
             result.objective_value = z;
+            finalize_diagnostics();
             return result;
         }
 
@@ -335,6 +424,7 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
             result.status = SolverStatus::UNBOUNDED;
             result.basis_indices = basis;
             result.message = "Objective is unbounded (no positive entries in pivot column direction).";
+            finalize_diagnostics();
             return result;
         }
 
@@ -346,6 +436,7 @@ RevisedSimplexResult RevisedSimplexSolver::run_revised_simplex_loop(
     result.status = SolverStatus::MAX_ITERATIONS_REACHED;
     result.basis_indices = basis;
     result.message = "Maximum iteration limit (" + std::to_string(max_iters) + ") reached.";
+    finalize_diagnostics();
     return result;
 }
 
@@ -528,6 +619,7 @@ RevisedSimplexResult RevisedSimplexSolver::solve(
 
     std::size_t phase1_iters = 0;
     std::size_t phase2_iters = 0;
+    RevisedSimplexResult p1_res;
 
     // 5. Execute Phase I if artificial variables are present
     if (num_artificial > 0) {
@@ -539,7 +631,7 @@ RevisedSimplexResult RevisedSimplexSolver::solve(
 
         std::vector<bool> allowed_p1(total_cols, true);
 
-        RevisedSimplexResult p1_res = run_revised_simplex_loop(
+        p1_res = run_revised_simplex_loop(
             c_phase1, A_std, b_norm, basis, allowed_p1, options_.max_iterations);
 
         phase1_iters = p1_res.iterations;
@@ -550,6 +642,7 @@ RevisedSimplexResult RevisedSimplexSolver::solve(
             res.phase1_iterations = phase1_iters;
             res.iterations = phase1_iters;
             res.message = "Phase I failed: " + p1_res.message;
+            res.device_diagnostics = p1_res.device_diagnostics;
             return res;
         }
 
@@ -572,6 +665,7 @@ RevisedSimplexResult RevisedSimplexSolver::solve(
             res.iterations = phase1_iters;
             res.message = "Problem is infeasible: artificial variable sum W = " +
                           std::to_string(artificial_sum) + " > 0 at Phase I optimality.";
+            res.device_diagnostics = p1_res.device_diagnostics;
             return res;
         }
 
@@ -628,6 +722,19 @@ RevisedSimplexResult RevisedSimplexSolver::solve(
     res.max_primal_residual = std::max(p2_res.max_primal_residual, 0.0);
     res.max_dual_residual = std::max(p2_res.max_dual_residual, 0.0);
     res.basis_condition = p2_res.basis_condition;
+
+    res.device_diagnostics.requested_backend = options_.backend;
+    if (p1_res.device_diagnostics.executed_backend == ExecutedBackend::HYBRID ||
+        p2_res.device_diagnostics.executed_backend == ExecutedBackend::HYBRID) {
+        res.device_diagnostics.executed_backend = ExecutedBackend::HYBRID;
+    } else {
+        res.device_diagnostics.executed_backend = ExecutedBackend::CPU;
+    }
+    res.device_diagnostics.gpu_iterations = p1_res.device_diagnostics.gpu_iterations + p2_res.device_diagnostics.gpu_iterations;
+    res.device_diagnostics.gpu_gemv_calls = p1_res.device_diagnostics.gpu_gemv_calls + p2_res.device_diagnostics.gpu_gemv_calls;
+    res.device_diagnostics.h2d_transfers = p1_res.device_diagnostics.h2d_transfers + p2_res.device_diagnostics.h2d_transfers;
+    res.device_diagnostics.d2h_transfers = p1_res.device_diagnostics.d2h_transfers + p2_res.device_diagnostics.d2h_transfers;
+    res.device_diagnostics.fallback_reason = p2_res.device_diagnostics.fallback_reason.empty() ? p1_res.device_diagnostics.fallback_reason : p2_res.device_diagnostics.fallback_reason;
 
     if (res.status == SolverStatus::OPTIMAL) {
         res.message = "Optimal solution found successfully via Two-Phase Revised Simplex.";

@@ -17,6 +17,17 @@
 
 namespace fs = std::filesystem;
 
+#define STRINGIFY_HELPER(x) #x
+#define STRINGIFY(x) STRINGIFY_HELPER(x)
+
+#if defined(__VERSION__)
+#define COMPILER_STRING "GCC " __VERSION__
+#elif defined(_MSC_VER)
+#define COMPILER_STRING "MSVC " STRINGIFY(_MSC_VER)
+#else
+#define COMPILER_STRING "Unknown Compiler"
+#endif
+
 namespace {
 
 // ==============================================================================
@@ -697,7 +708,7 @@ void export_results(
         if (jf.is_open()) {
             jf << "{\n";
             jf << "  \"system_info\": {\n"
-               << "    \"compiler\": \"GCC " << __VERSION__ << "\",\n"
+               << "    \"compiler\": \"" << COMPILER_STRING << "\",\n"
                << "    \"optimization_flags\": \"-O3 -DNDEBUG\",\n"
                << "    \"cpu\": \"AMD Ryzen 5 6600H with Radeon Graphics (12 Threads)\",\n"
                << "    \"os\": \"Windows 11 x86_64\",\n"
@@ -791,7 +802,7 @@ void export_results(
 int main() {
     std::cout << "========================================================================================\n";
     std::cout << "     VORTEX Phase 5.1: Rigorous Numerical & Performance Benchmark Audit                \n";
-    std::cout << "     Compiler: GCC " << __VERSION__ << " | Flags: -O3 -DNDEBUG | Target: Windows x86_64 \n";
+    std::cout << "     Compiler: " << COMPILER_STRING << " | Flags: -O3 -DNDEBUG | Target: Windows x86_64 \n";
     std::cout << "========================================================================================\n\n";
 
     auto mem_records = run_memory_audit();

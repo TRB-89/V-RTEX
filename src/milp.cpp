@@ -4,6 +4,7 @@
 #include <cmath>
 #include <queue>
 #include <stack>
+#include <array>
 
 namespace vortex {
 

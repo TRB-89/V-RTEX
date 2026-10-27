@@ -7,6 +7,7 @@ VORTEX is an optimization engine developed for **SIH26119**.
 - **Phase 4**: Revised Simplex Solver + LU Decomposition with partial pivoting, forward/backward substitution, basis matrix operations, reduced-cost calculations, and numerical stability checks.
 - **Phase 5**: Sparse Matrix Engine (CSR and CSC), SpMV, Dense-to-Sparse conversions, Sparse-Aware Revised Simplex with $O(nnz)$ column pricing, and memory/performance benchmarks.
 - **Phase 6**: Mixed-Integer Linear Programming (MILP) Branch-and-Bound solver supporting Continuous, Integer, and Binary variables, arbitrary bounds, best-bound/DFS/BFS exploration, most-fractional branching, and incumbent tracking.
+- **Phase 7**: CPU-Based Convex Quadratic Programming (QP) solver from mathematical first principles using a Mehrotra Predictor-Corrector Primal-Dual Interior-Point Method, full PSD verification via Jacobi rotation eigenvalue decomposition, unconstrained stationarity fast-path, and dynamic KKT regularization.
 
 ---
 
@@ -22,6 +23,7 @@ vortex/
 │   ├── sparse_matrix.hpp       # CSR and CSC sparse matrix templates
 │   ├── sparse_revised_simplex.hpp # Sparse Revised Simplex LP solver
 │   ├── milp.hpp                # Mixed-Integer Linear Programming (MILP) solver
+│   ├── qp.hpp                  # Convex Quadratic Programming (QP) solver forwarder
 │   └── vortex/
 │       ├── matrix.hpp          # C++20 Matrix class template with concept constraints
 │       ├── simplex.hpp         # Forwarding header for namespace inclusion
@@ -29,13 +31,15 @@ vortex/
 │       ├── lu_decomposition.hpp# LU factorization with partial pivoting
 │       ├── sparse_matrix.hpp   # CSR & CSC sparse matrix implementations
 │       ├── sparse_revised_simplex.hpp # Sparse Revised Simplex solver
-│       └── milp.hpp            # MILP Branch-and-Bound solver header
+│       ├── milp.hpp            # MILP Branch-and-Bound solver header
+│       └── qp.hpp              # Convex Quadratic Programming solver header
 ├── src/
 │   ├── simplex.cpp             # Simplex tableau implementation & Two-Phase logic
 │   ├── revised_simplex.cpp     # Revised Simplex solver & basis operations
 │   ├── sparse_revised_simplex.cpp # Sparse Revised Simplex implementation
 │   ├── milp.cpp                # MILP Branch-and-Bound solver implementation
-│   └── main.cpp                # CLI demo (Phases 1-6)
+│   ├── qp.cpp                  # Convex QP Primal-Dual Interior-Point solver
+│   └── main.cpp                # CLI demo (Phases 1-7)
 ├── tests/
 │   ├── test_matrix.cpp         # 19 automated unit tests for Matrix engine (Phase 1)
 │   ├── test_simplex.cpp        # 17 automated unit tests for Standard Simplex (Phase 2)
@@ -45,13 +49,16 @@ vortex/
 │   ├── test_sparse_matrix.cpp     # 45 automated unit tests for Sparse Engine (Phase 5)
 │   ├── test_sparse_revised_simplex.cpp # 21 automated unit tests for Sparse Simplex (Phase 5)
 │   ├── test_numerical_audit.cpp   # 54 automated numerical & memory audit tests (Phase 5.1)
-│   └── test_milp.cpp           # 27 automated unit tests for MILP solver (Phase 6)
+│   ├── test_milp.cpp           # 27 automated unit tests for MILP solver (Phase 6)
+│   └── test_qp.cpp             # 10 automated unit tests for Convex QP solver (Phase 7)
 ├── benchmarks/
 │   ├── benchmark_matrix.cpp    # Dense Matrix performance benchmarks
 │   └── benchmark_sparse.cpp    # Sparse memory, SpMV, and pricing benchmarks
 └── docs/
     ├── ARCHITECTURE.md         # Architecture, mathematical foundations & memory specs
-    └── BEGINNER_GUIDE.md       # Beginner guide to C++20, Matrix math & Two-Phase Simplex
+    ├── BEGINNER_GUIDE.md       # Beginner guide to C++20, Matrix math & Two-Phase Simplex
+    ├── PHASE5_VALIDATION.md    # Sparse engine and memory audit validation
+    └── PHASE7_QP_DOCUMENTATION.md # Convex QP solver interior-point method derivations & results
 ```
 
 ---
@@ -65,10 +72,11 @@ cmake -B build -G "MinGW Makefiles"
 # 2. Compile all targets
 cmake --build build
 
-# 3. Run all unit tests via CTest (255 total tests across 9 suites)
+# 3. Run all unit tests via CTest (265 total tests across 10 suites)
 ctest --test-dir build-release --output-on-failure
 
 # 4. Run individual test suites
+.\build-release\vortex_qp_tests.exe
 .\build-release\vortex_milp_tests.exe
 .\build-release\vortex_numerical_audit_tests.exe
 .\build-release\vortex_sparse_revised_simplex_tests.exe
@@ -130,3 +138,17 @@ $$\begin{aligned}
 - Status: `OPTIMAL`
 - Explored Nodes: `5`
 - Solution: $x = [0, 1, 0, 1] \implies Z^* = 90.0$
+
+### 5. Constrained Portfolio Convex QP Benchmark (Phase 7)
+$$\begin{aligned}
+\text{Minimize } \quad & \frac{1}{2} (2x_1^2 + 2x_2^2) - 2x_1 - 5x_2 \\
+\text{Subject to } \quad & x_1 - x_2 \le 2 \\
+& x_1 + 2x_2 \le 6 \\
+& x_1 \ge 0, \quad x_2 \ge 0
+\end{aligned}$$
+- Status: `OPTIMAL`
+- Interior Iterations: `12`
+- Primal Residual $\|r_p\|_\infty$: $0.0$
+- Dual Residual $\|r_d\|_\infty$: $3.97 \times 10^{-14}$
+- Duality Gap: $9.80 \times 10^{-8}$
+- Solution: $x = [1.0000, 2.5000] \implies Z^* = -7.2500$

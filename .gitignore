@@ -1,5 +1,6 @@
 # Build directories
 build/
+build*/
 bin/
 lib/
 out/
@@ -38,8 +39,13 @@ Testing/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 .env
 .env.*
+
+# Node / Web
+node_modules/
+dist/
 
 # OS generated files
 .DS_Store
