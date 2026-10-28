@@ -51,7 +51,7 @@ ENV PYTHONUNBUFFERED=1 \
     SOLVER_TIMEOUT_SECONDS=15 \
     MAX_ELEMENTS_LIMIT=1000000 \
     MAX_SOLVER_MEMORY_MB=300 \
-    ALLOWED_ORIGINS="*"
+    ALLOWED_ORIGINS="https://v-rtex-three.vercel.app,http://localhost:5173,http://127.0.0.1:5173"
 
 # Install minimal runtime dependencies: libstdc++6 and curl for health check
 RUN apt-get update && apt-get install -y --no-install-recommends \

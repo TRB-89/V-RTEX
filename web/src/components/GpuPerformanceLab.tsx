@@ -17,7 +17,7 @@ import {
   Layers
 } from 'lucide-react';
 import type { Phase8EBenchmarkDataset, BenchmarkRecord } from '../types/solver';
-import { SolverApiClient } from '../api/client';
+import { SolverApiClient, buildApiUrl } from '../api/client';
 import { 
   ResponsiveContainer, 
   BarChart, 
@@ -224,7 +224,7 @@ export const GpuPerformanceLab: React.FC<GpuLabProps> = ({ benchmarkData }) => {
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
           <h2 className="text-xl font-display font-bold text-chrome">Phase 8E Benchmarks Loading or Unavailable</h2>
           <p className="text-xs font-mono text-violet-muted leading-relaxed">
-            Connecting to native FastAPI service at <span className="text-chrome">http://127.0.0.1:8000/api/v1/benchmarks</span>.
+            Connecting to native FastAPI service at <span className="text-chrome">{buildApiUrl('/api/v1/benchmarks')}</span>.
             If the server is offline, start with <code className="text-electric">python -m uvicorn main:app</code>.
           </p>
         </div>

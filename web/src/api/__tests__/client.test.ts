@@ -3,7 +3,9 @@ import {
   getApiBaseUrl, 
   buildApiUrl, 
   SolverApiClient, 
-  ApiError 
+  ApiError,
+  LIVE_PRODUCTION_API_URL,
+  LOCAL_DEV_API_URL
 } from '../client';
 
 describe('VØRTEX API Client', () => {
@@ -17,7 +19,39 @@ describe('VØRTEX API Client', () => {
     globalThis.fetch = originalFetch;
   });
 
-  describe('buildApiUrl', () => {
+  describe('getApiBaseUrl', () => {
+    it('should default to localhost:8000 in development when environment variable is unset', () => {
+      const base = getApiBaseUrl('', false);
+      expect(base).toBe(LOCAL_DEV_API_URL);
+    });
+
+    it('should default strictly to https://v-rtex.onrender.com in production when environment variable is unset', () => {
+      const base = getApiBaseUrl('', true);
+      expect(base).toBe(LIVE_PRODUCTION_API_URL);
+    });
+
+    it('should override accidental 127.0.0.1 in production build with live production API', () => {
+      const base = getApiBaseUrl('http://127.0.0.1:8000', true);
+      expect(base).toBe(LIVE_PRODUCTION_API_URL);
+    });
+
+    it('should override accidental localhost in production build with live production API', () => {
+      const base = getApiBaseUrl('http://localhost:8000', true);
+      expect(base).toBe(LIVE_PRODUCTION_API_URL);
+    });
+
+    it('should strip trailing slashes consistently', () => {
+      const base = getApiBaseUrl('https://v-rtex.onrender.com///', true);
+      expect(base).toBe('https://v-rtex.onrender.com');
+    });
+
+    it('should preserve valid custom production API endpoint', () => {
+      const base = getApiBaseUrl('https://custom-api.vortex.org', true);
+      expect(base).toBe('https://custom-api.vortex.org');
+    });
+  });
+
+  describe('buildApiUrl endpoint consistency', () => {
     it('should build clean path without duplicate /api or /api/v1', () => {
       const urlHealth = buildApiUrl('/api/v1/health');
       expect(urlHealth).toMatch(/\/api\/v1\/health$/);
@@ -32,9 +66,19 @@ describe('VØRTEX API Client', () => {
       expect(urlCapabilities).toMatch(/\/api\/v1\/capabilities$/);
     });
 
-    it('should default to localhost:8000 when environment variable is unset', () => {
-      const base = getApiBaseUrl();
-      expect(base).toBe('http://localhost:8000');
+    it('should ensure health, capabilities, presets, benchmarks and solve endpoints all share the exact same API base URL', () => {
+      const currentBase = getApiBaseUrl();
+      const healthUrl = buildApiUrl('/api/v1/health');
+      const capabilitiesUrl = buildApiUrl('/api/v1/capabilities');
+      const presetsUrl = buildApiUrl('/api/v1/presets');
+      const benchmarksUrl = buildApiUrl('/api/v1/benchmarks');
+      const solveUrl = buildApiUrl('/api/v1/solve');
+
+      expect(healthUrl).toBe(`${currentBase}/api/v1/health`);
+      expect(capabilitiesUrl).toBe(`${currentBase}/api/v1/capabilities`);
+      expect(presetsUrl).toBe(`${currentBase}/api/v1/presets`);
+      expect(benchmarksUrl).toBe(`${currentBase}/api/v1/benchmarks`);
+      expect(solveUrl).toBe(`${currentBase}/api/v1/solve`);
     });
   });
 

@@ -5,19 +5,49 @@ import type {
   BenchmarkRecord 
 } from '../types/solver';
 
+export const LIVE_PRODUCTION_API_URL = 'https://v-rtex.onrender.com';
+export const LOCAL_DEV_API_URL = 'http://localhost:8000';
+
 /**
  * Normalizes and cleans the base URL from environment configuration.
- * Defaults to http://localhost:8000 for local development.
- * Supports VITE_API_BASE_URL (standard) and VITE_API_URL (legacy).
- * Strips trailing slashes to ensure consistent URL composition.
+ * - In production builds, strictly defaults to LIVE_PRODUCTION_API_URL (https://v-rtex.onrender.com).
+ * - Never silently falls back to 127.0.0.1 or localhost in production builds.
+ * - Allows localhost fallback only for local development.
+ * - Supports VITE_API_BASE_URL (standard) and VITE_API_URL (legacy alias).
+ * - Strips trailing slashes to ensure consistent URL composition.
  */
-export function getApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
-  if (!envUrl || typeof envUrl !== 'string') {
-    return 'http://localhost:8000';
+export function getApiBaseUrl(
+  customEnvUrl?: string,
+  forceProduction?: boolean
+): string {
+  const envUrl = customEnvUrl !== undefined
+    ? customEnvUrl
+    : (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL);
+
+  const isProduction = forceProduction !== undefined
+    ? forceProduction
+    : Boolean(import.meta.env.PROD || import.meta.env.MODE === 'production');
+
+  if (typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+
+    // In a production build, never allow fallback or configuration pointing to 127.0.0.1 or localhost
+    if (isProduction && (trimmed.includes('127.0.0.1') || trimmed.includes('localhost'))) {
+      console.warn(
+        `[VØRTEX] Localhost URL (${trimmed}) detected in production build. Enforcing production API endpoint: ${LIVE_PRODUCTION_API_URL}`
+      );
+      return LIVE_PRODUCTION_API_URL;
+    }
+    return trimmed;
   }
-  const trimmed = envUrl.trim().replace(/\/+$/, '');
-  return trimmed || 'http://localhost:8000';
+
+  // Never silently fall back to 127.0.0.1 or localhost in a production build
+  if (isProduction) {
+    return LIVE_PRODUCTION_API_URL;
+  }
+
+  // Local development fallback
+  return LOCAL_DEV_API_URL;
 }
 
 export const API_BASE = getApiBaseUrl();
