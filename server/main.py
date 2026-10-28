@@ -11,6 +11,7 @@ import tempfile
 import re
 import hashlib
 import datetime
+import shutil
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field, field_validator
@@ -18,27 +19,59 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 
+try:
+    import resource
+except ImportError:
+    resource = None
+
 # Determine repository root
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Locate native solver runner executable
-SOLVER_EXECUTABLE_CANDIDATES = [
-    REPO_ROOT / "build-cuda" / "vortex_solver_runner.exe",
-    REPO_ROOT / "build-cuda" / "vortex_solver_runner",
-    REPO_ROOT / "build-release" / "vortex_solver_runner.exe",
-    REPO_ROOT / "build-release" / "vortex_solver_runner",
-    REPO_ROOT / "build" / "vortex_solver_runner.exe",
-    REPO_ROOT / "build" / "vortex_solver_runner",
-]
+def get_solver_executable() -> Path:
+    """
+    Locates the native solver runner binary.
+    Prioritizes explicit environment overrides, then platform-native binaries,
+    ensuring Linux deployments never invoke a Windows .exe.
+    """
+    # 1. Explicit environment variable override (e.g. containerized deployment)
+    env_bin = os.environ.get("VORTEX_SOLVER_BIN")
+    if env_bin:
+        p = Path(env_bin)
+        if p.exists() and (sys.platform == "win32" or os.access(p, os.X_OK)):
+            return p
 
-SOLVER_EXECUTABLE = None
-for candidate in SOLVER_EXECUTABLE_CANDIDATES:
-    if candidate.exists() and os.access(candidate, os.X_OK):
-        SOLVER_EXECUTABLE = candidate
-        break
+    # 2. Platform-aware executable filename
+    is_win = sys.platform == "win32"
+    primary_name = "vortex_solver_runner.exe" if is_win else "vortex_solver_runner"
 
-if not SOLVER_EXECUTABLE:
-    SOLVER_EXECUTABLE = SOLVER_EXECUTABLE_CANDIDATES[0]
+    # Search known build locations and system paths
+    search_dirs = [
+        REPO_ROOT / "build",
+        REPO_ROOT / "build-release",
+        REPO_ROOT / "build-cuda",
+        Path("/app/build"),
+        Path("/usr/local/bin"),
+    ]
+
+    for d in search_dirs:
+        cand = d / primary_name
+        if cand.exists() and (is_win or os.access(cand, os.X_OK)):
+            return cand
+
+    # Check system PATH
+    which_path = shutil.which(primary_name)
+    if which_path:
+        p = Path(which_path)
+        if is_win or os.access(p, os.X_OK):
+            return p
+
+    # Fallback default: ensure it uses platform-appropriate binary name
+    if env_bin:
+        return Path(env_bin)
+    return REPO_ROOT / "build" / primary_name
+
+SOLVER_EXECUTABLE = get_solver_executable()
 
 BENCHMARK_DIR = REPO_ROOT / "benchmarks" / "results"
 BENCHMARK_RESULTS_PATH = BENCHMARK_DIR / "phase8e_results.json"
@@ -52,26 +85,60 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# Restrict CORS to configured frontend development and production origins (Module B requirement)
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS configuration supporting environment variable override for production hosting
+ENV_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "")
+if ENV_ORIGINS.strip() == "*":
+    ALLOWED_ORIGINS = ["*"]
+    ALLOW_CREDENTIALS = False
+elif ENV_ORIGINS.strip():
+    ALLOWED_ORIGINS = [orig.strip() for orig in ENV_ORIGINS.split(",") if orig.strip()]
+    ALLOW_CREDENTIALS = True
+else:
+    ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+    ALLOW_CREDENTIALS = True
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=ALLOW_CREDENTIALS,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept"],
 )
 
-# Concurrency throttle to prevent system thrashing and memory exhaustion
-SOLVER_SEMAPHORE = asyncio.Semaphore(4)
-SOLVER_TIMEOUT_SECONDS = 30.0
-MAX_ELEMENTS_LIMIT = 25_000_000
+# Render Free Tier (512 MB RAM) Concurrency and Memory Guards
+MAX_CONCURRENT_SOLVES = int(os.environ.get("MAX_CONCURRENT_SOLVES", "1"))
+SOLVER_SEMAPHORE = asyncio.Semaphore(MAX_CONCURRENT_SOLVES)
+
+# Solver timeout (seconds) to prevent process hangs and HTTP gateway timeouts
+SOLVER_TIMEOUT_SECONDS = float(os.environ.get("SOLVER_TIMEOUT_SECONDS", "15.0"))
+
+# Matrix size limit (m * n elements) to prevent excessive memory allocation in 512 MB RAM
+# 1,000,000 double-precision elements is ~8 MB raw data and ~40 MB parsed in Python.
+MAX_ELEMENTS_LIMIT = int(os.environ.get("MAX_ELEMENTS_LIMIT", "1000000"))
+
+# Maximum variables and constraints limits
+MAX_VARIABLES_LIMIT = int(os.environ.get("MAX_VARIABLES_LIMIT", "10000"))
+MAX_CONSTRAINTS_LIMIT = int(os.environ.get("MAX_CONSTRAINTS_LIMIT", "10000"))
+
+# Subprocess memory limit (MB) enforced via OS rlimit on Linux
+MAX_SOLVER_MEMORY_MB = int(os.environ.get("MAX_SOLVER_MEMORY_MB", "300"))
+
+def get_preexec_fn():
+    """Returns a function to restrict address space on Linux/POSIX systems."""
+    if resource is None or sys.platform == "win32" or MAX_SOLVER_MEMORY_MB <= 0:
+        return None
+    limit_bytes = MAX_SOLVER_MEMORY_MB * 1024 * 1024
+    def _set_limits():
+        try:
+            resource.setrlimit(resource.RLIMIT_AS, (limit_bytes, limit_bytes))
+        except Exception:
+            pass
+    return _set_limits
 
 # ==============================================================================
 # Pydantic Schemas (Module B)
@@ -275,8 +342,8 @@ def validate_solve_request(req: SolveRequestV1):
     n = len(req.c)
     if n == 0:
         raise HTTPException(status_code=400, detail="Objective vector c cannot be empty.")
-    if n > 50_000:
-        raise HTTPException(status_code=400, detail=f"Variable dimension n={n} exceeds engine limit of 50,000.")
+    if n > MAX_VARIABLES_LIMIT:
+        raise HTTPException(status_code=400, detail=f"Variable dimension n={n} exceeds limit of {MAX_VARIABLES_LIMIT}.")
 
     # Check finite numbers in c
     for idx, val in enumerate(req.c):
@@ -284,10 +351,10 @@ def validate_solve_request(req: SolveRequestV1):
             raise HTTPException(status_code=400, detail=f"Non-finite or invalid number at c[{idx}]: {val}")
 
     m = len(req.A)
-    if m > 50_000:
-        raise HTTPException(status_code=400, detail=f"Constraint dimension m={m} exceeds engine limit of 50,000.")
+    if m > MAX_CONSTRAINTS_LIMIT:
+        raise HTTPException(status_code=400, detail=f"Constraint dimension m={m} exceeds limit of {MAX_CONSTRAINTS_LIMIT}.")
     if m * n > MAX_ELEMENTS_LIMIT:
-        raise HTTPException(status_code=400, detail=f"Matrix size m*n={m*n} exceeds allocation limit.")
+        raise HTTPException(status_code=400, detail=f"Matrix size m*n={m*n} exceeds allocation limit of {MAX_ELEMENTS_LIMIT}.")
 
     if m > 0:
         for i, row in enumerate(req.A):
@@ -361,18 +428,44 @@ def validate_solve_request(req: SolveRequestV1):
 # ==============================================================================
 # API Endpoints (Module B & Module C)
 # ==============================================================================
+# API Endpoints (Module B & Module C)
+# ==============================================================================
 
-@app.get("/api/v1/health")
-@app.get("/api/health")
+@app.get("/", tags=["Health"])
+async def root():
+    """Root endpoint for platform availability and service discovery."""
+    return {
+        "service": "VØRTEX Native Optimization Engine API",
+        "version": "3.0.0",
+        "status": "online",
+        "docs_url": "/api/docs",
+        "health_check": "/api/v1/health",
+        "limits": {
+            "max_concurrent_solves": MAX_CONCURRENT_SOLVES,
+            "solver_timeout_seconds": SOLVER_TIMEOUT_SECONDS,
+            "max_elements_limit": MAX_ELEMENTS_LIMIT,
+            "max_variables_limit": MAX_VARIABLES_LIMIT,
+            "max_constraints_limit": MAX_CONSTRAINTS_LIMIT,
+        }
+    }
+
+
+@app.get("/healthz", tags=["Health"])
+@app.get("/api/v1/health", tags=["Health"])
+@app.get("/api/health", tags=["Health"])
 async def health_check():
     """Reports API health status, solver engine version, and native executable readiness."""
-    exists = SOLVER_EXECUTABLE.exists() if SOLVER_EXECUTABLE else False
+    executable = get_solver_executable()
+    exists = executable.exists() if executable else False
+    is_runnable = (sys.platform == "win32" or os.access(executable, os.X_OK)) if exists else False
     return {
-        "status": "online",
+        "status": "online" if (exists and is_runnable) else "degraded",
         "engine": "VØRTEX C++20 / CUDA Optimization Engine",
         "version": "3.0.0",
         "executable_exists": exists,
-        "executable_path": str(SOLVER_EXECUTABLE) if exists else None,
+        "executable_runnable": is_runnable,
+        "executable_path": str(executable) if exists else None,
+        "platform": sys.platform,
     }
 
 
@@ -383,15 +476,16 @@ async def get_capabilities():
     Reports actual solver capabilities, physical CUDA hardware, supported file formats, and limits.
     Invokes native solver with `--capabilities` to ensure zero fabricated reporting.
     """
-    if not SOLVER_EXECUTABLE or not SOLVER_EXECUTABLE.exists():
+    executable = get_solver_executable()
+    if not executable or not executable.exists():
         raise HTTPException(
             status_code=503, 
-            detail=f"Native solver binary not found at {SOLVER_EXECUTABLE}. Build vortex_solver_runner first."
+            detail=f"Native solver binary not found at {executable}. Build vortex_solver_runner first."
         )
 
     try:
         proc = await asyncio.create_subprocess_exec(
-            str(SOLVER_EXECUTABLE),
+            str(executable),
             "--capabilities",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -444,10 +538,11 @@ async def solve_optimization_problem(req: SolveRequestV1):
     """
     validate_solve_request(req)
 
-    if not SOLVER_EXECUTABLE or not SOLVER_EXECUTABLE.exists():
+    executable = get_solver_executable()
+    if not executable or not executable.exists():
         raise HTTPException(
             status_code=503, 
-            detail=f"Native solver binary not found at {SOLVER_EXECUTABLE}. Build vortex_solver_runner first."
+            detail=f"Native solver binary not found at {executable}. Build vortex_solver_runner first."
         )
 
     async with SOLVER_SEMAPHORE:
@@ -460,14 +555,20 @@ async def solve_optimization_problem(req: SolveRequestV1):
             with open(input_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f)
 
-            # Subprocess argument array execution with shell=False and restricted cwd
+            extra_kwargs = {}
+            preexec = get_preexec_fn()
+            if preexec is not None:
+                extra_kwargs["preexec_fn"] = preexec
+
+            # Subprocess argument array execution with shell=False, timeout and memory restrictions
             proc = await asyncio.create_subprocess_exec(
-                str(SOLVER_EXECUTABLE),
+                str(executable),
                 "--input", input_path,
                 "--output", output_path,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=str(REPO_ROOT)
+                cwd=str(REPO_ROOT),
+                **extra_kwargs
             )
 
             try:
@@ -830,4 +931,7 @@ async def get_presets():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", "10000"))
+    host = os.environ.get("HOST", "0.0.0.0")
+    module_target = "server.main:app" if (REPO_ROOT / "server").exists() and Path.cwd() == REPO_ROOT else "main:app"
+    uvicorn.run(module_target, host=host, port=port, reload=False)

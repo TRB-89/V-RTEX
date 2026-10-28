@@ -212,6 +212,16 @@ Frontend Build (0 Errors):
 
 ---
 
+## Production Cloud Deployment (Render Free Tier)
+
+VØRTEX provides a production-ready, multi-stage Docker deployment optimized for **Render Free Web Services** (512 MB RAM, headless Linux C++20 optimization solver, pure CPU LP/MILP/QP execution):
+
+- **Zero-Config Blueprint**: Deploy directly via [`render.yaml`](render.yaml).
+- **Deployment Documentation**: Complete deployment, configuration, and verification guide in [`docs/RENDER_DEPLOYMENT.md`](docs/RENDER_DEPLOYMENT.md).
+- **Safe Hardware Limits**: Preconfigured with process-level memory limits (`MAX_SOLVER_MEMORY_MB=300`), concurrency semaphore (`MAX_CONCURRENT_SOLVES=1`), and solver timeouts (`SOLVER_TIMEOUT_SECONDS=15`) tailored for 512 MB memory footprints.
+
+---
+
 ## Known Limitations
 
 - **Branch-and-Bound on GPU**: MILP branch-and-bound tree search is currently restricted to CPU host execution due to warp divergence and irregular stack memory access.

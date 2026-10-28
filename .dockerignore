@@ -1,0 +1,48 @@
+# Git and VCS
+.git
+.gitignore
+.github
+
+# Build artifacts & Host compilation directories
+build/
+build-*/
+*.exe
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Frontend assets (hosted separately)
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Development, IDE & OS artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+tmp/
+
+# Documentation and tests (not needed inside container runtime)
+docs/
+tests/
