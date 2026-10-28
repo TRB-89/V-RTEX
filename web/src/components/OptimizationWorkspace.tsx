@@ -37,7 +37,7 @@ interface WorkspaceProps {
 const DEFAULT_PRESETS: ProblemPreset[] = [
   {
     id: 'sih26119-lp',
-    name: 'SIH26119 Simplex Benchmark',
+    name: '[Example Problem] SIH26119 Simplex Benchmark (LP)',
     description: 'Reference 2-variable LP: Max 3x1 + 5x2 s.t. x1 <= 4, 2x2 <= 12, 3x1 + 2x2 <= 18. Known Z* = 36.000',
     solver_type: 'LP',
     sense: 'MAXIMIZE',
@@ -58,7 +58,7 @@ const DEFAULT_PRESETS: ProblemPreset[] = [
   },
   {
     id: 'two-phase-lp',
-    name: 'Two-Phase Mixed LP',
+    name: '[Example Problem] Two-Phase Mixed LP',
     description: 'LP requiring Phase 1 artificials: Max 2x1 + 3x2 s.t. x1 + x2 >= 2, x1 <= 3, x2 <= 4. Known Z* = 18.000',
     solver_type: 'LP',
     sense: 'MAXIMIZE',
@@ -79,7 +79,7 @@ const DEFAULT_PRESETS: ProblemPreset[] = [
   },
   {
     id: 'knapsack-milp',
-    name: '0-1 Knapsack Problem',
+    name: '[Example Problem] 0-1 Knapsack Problem (MILP)',
     description: 'Binary Integer Program: Max 10x1 + 40x2 + 30x3 + 50x4 s.t. 5x1 + 4x2 + 6x3 + 3x4 <= 10. Known Z* = 90.000',
     solver_type: 'MILP',
     sense: 'MAXIMIZE',
@@ -100,7 +100,7 @@ const DEFAULT_PRESETS: ProblemPreset[] = [
   },
   {
     id: 'portfolio-qp',
-    name: 'Constrained Portfolio QP',
+    name: '[Example Problem] Constrained Portfolio QP',
     description: 'Quadratic Program: Min 0.5(2x1^2 + 2x2^2) - 2x1 - 5x2 s.t. x1 + x2 <= 2. Known Z* = -6.125',
     solver_type: 'QP',
     sense: 'MINIMIZE',
@@ -160,9 +160,26 @@ export const OptimizationWorkspace: React.FC<WorkspaceProps> = ({
 
   // Solver execution state
   const [isSolving, setIsSolving] = useState<boolean>(false);
+  const [solveDurationSeconds, setSolveDurationSeconds] = useState<number>(0);
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [selectedPresetId, setSelectedPresetId] = useState<string>('sih26119-lp');
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Track solve duration to provide Render cold-start guidance
+  useEffect(() => {
+    let interval: any = null;
+    if (isSolving) {
+      setSolveDurationSeconds(0);
+      interval = setInterval(() => {
+        setSolveDurationSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      setSolveDurationSeconds(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isSolving]);
 
   // File import ref
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -511,18 +528,21 @@ export const OptimizationWorkspace: React.FC<WorkspaceProps> = ({
           
           {/* Preset dropdown */}
           <div className="flex items-center space-x-1.5">
-            <span className="text-xs font-mono text-violet-muted whitespace-nowrap">Preset:</span>
+            <span className="text-xs font-mono text-violet-muted whitespace-nowrap">Sample Preset:</span>
             <select
               value={selectedPresetId}
               onChange={(e) => handleLoadPreset(e.target.value)}
               className="bg-obsidian-surface border border-graphite-border text-chrome text-xs font-mono rounded-sm px-2.5 py-1.5 focus:border-electric focus:outline-none"
             >
               <option value="">-- Custom Problem --</option>
-              {presets.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} [{p.solver_type}]
-                </option>
-              ))}
+              {presets.map((p) => {
+                const isLabeled = p.name.startsWith('[Example') || p.name.startsWith('[Sample');
+                return (
+                  <option key={p.id} value={p.id}>
+                    {isLabeled ? p.name : `[Example Problem] ${p.name}`} [{p.solver_type}]
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -709,14 +729,36 @@ export const OptimizationWorkspace: React.FC<WorkspaceProps> = ({
             validationErrors={validationErrors}
           />
 
-          {/* Execution Error Banner */}
-          {executionError && (
-            <div className="p-3 bg-red-950/40 border border-red-800/80 rounded-sm text-red-200 text-xs font-mono flex items-start gap-2">
-              <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+          {/* Render Free Cold-Start Notice (> 3s solve duration) */}
+          {isSolving && solveDurationSeconds >= 3 && (
+            <div className="p-3 bg-amber-950/40 border border-amber-800/70 rounded-sm text-amber-200 text-xs font-mono flex items-start gap-2 animate-pulse">
+              <Info className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
               <div>
-                <div className="font-semibold">Execution Precheck / Solver Error</div>
-                <div className="mt-0.5 text-red-300">{executionError}</div>
+                <span className="font-semibold block">Connecting to Render Cloud Backend ({solveDurationSeconds}s elapsed)...</span>
+                <span className="text-amber-300/80 text-[11px]">
+                  Render Free tier instances automatically spin down on inactivity. The initial wake-up may take 30–50 seconds.
+                </span>
               </div>
+            </div>
+          )}
+
+          {/* Execution Error Banner with Inline Retry */}
+          {executionError && (
+            <div className="p-3 bg-red-950/40 border border-red-800/80 rounded-sm text-red-200 text-xs font-mono flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="font-semibold">Execution Precheck / Solver Error</div>
+                  <div className="mt-0.5 text-red-300">{executionError}</div>
+                </div>
+              </div>
+              <button
+                onClick={handleSolve}
+                className="px-2.5 py-1 bg-red-900/60 hover:bg-red-800 border border-red-700 text-red-100 rounded-sm text-[11px] font-mono flex items-center gap-1 transition-colors shrink-0"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Retry Solve</span>
+              </button>
             </div>
           )}
 
@@ -768,6 +810,7 @@ export const OptimizationWorkspace: React.FC<WorkspaceProps> = ({
             variables={variables}
             constraints={constraints}
             isSolving={isSolving}
+            solveDurationSeconds={solveDurationSeconds}
             onInspectMatrix={onInspectMatrix}
             onViewConvergence={onViewConvergence}
           />

@@ -7,6 +7,9 @@ interface NavbarProps {
   setActiveTab: (tab: 'overview' | 'workspace' | 'matrix' | 'convergence' | 'benchmarks') => void;
   capabilities: ApiCapabilitiesResponse | null;
   health: ApiHealthResponse | null;
+  apiStatus: 'checking' | 'online' | 'offline';
+  apiError?: string | null;
+  onRetryConnect?: () => void;
   reducedMotion: boolean;
   setReducedMotion: (v: boolean) => void;
   onLaunchSolver: () => void;
@@ -17,13 +20,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   capabilities,
   health,
+  apiStatus,
+  apiError,
+  onRetryConnect,
   reducedMotion,
   setReducedMotion,
   onLaunchSolver,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isCudaReady = capabilities?.cuda?.available;
-  const isOnline = health?.status === 'online' || health?.status === 'healthy';
 
   const navItems: Array<{ id: 'overview' | 'workspace' | 'matrix' | 'convergence' | 'benchmarks'; label: string }> = [
     { id: 'overview', label: 'Overview' },
@@ -88,10 +93,46 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Section: Telemetry Indicators & Restrained Outlined CTA */}
         <div className="hidden sm:flex items-center space-x-4">
           
-          {/* Architecture / CUDA Status Tag */}
-          <div className="flex items-center space-x-2 text-[10px] font-mono text-ash px-2 py-0.5 border border-steel/30">
-            <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-silver' : 'bg-ash/50'}`} />
-            <span>{isCudaReady ? 'CUDA SM_86' : 'CPU HOST'}</span>
+          {/* Live API Online / Offline / Checking Status Tag */}
+          <div 
+            className="flex items-center space-x-2 text-[10px] font-mono px-2.5 py-1 border border-steel/30"
+            title={
+              apiStatus === 'online' && health
+                ? `${health.engine} v${health.version} (${health.platform})`
+                : apiStatus === 'offline' && apiError
+                ? `Connection error: ${apiError}`
+                : undefined
+            }
+          >
+            {apiStatus === 'online' ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                <span className="text-emerald-300 font-semibold tracking-wider">API ONLINE</span>
+                <span className="text-steel">·</span>
+                <span className="text-ash">{isCudaReady ? 'CUDA SM_86' : 'CPU HOST'}</span>
+              </>
+            ) : apiStatus === 'checking' ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-amber-300 tracking-wider" title="Connecting to Render backend (Render Free may take 30–50s to cold start)...">
+                  CONNECTING...
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span className="text-rose-400 font-semibold tracking-wider">API OFFLINE</span>
+                {onRetryConnect && (
+                  <button
+                    onClick={onRetryConnect}
+                    className="ml-1 px-1.5 py-0.5 bg-steel/30 hover:bg-steel/50 text-silver hover:text-white rounded text-[9px] uppercase tracking-wider transition-colors"
+                    title="Retry connecting to backend"
+                  >
+                    Retry
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
           {/* Reduced Motion Toggle */}
@@ -149,9 +190,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-2 flex items-center justify-between border-t border-steel/20">
-            <span className="text-[10px] text-ash">
-              {isCudaReady ? 'CUDA SM_86 ACTIVE' : 'CPU HOST ACTIVE'}
-            </span>
+            <div className="flex items-center space-x-2 text-[10px]">
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                apiStatus === 'online' ? 'bg-emerald-400' : apiStatus === 'checking' ? 'bg-amber-400 animate-pulse' : 'bg-rose-500'
+              }`} />
+              <span className={apiStatus === 'online' ? 'text-emerald-300' : apiStatus === 'checking' ? 'text-amber-300' : 'text-rose-400'}>
+                {apiStatus === 'online'
+                  ? (isCudaReady ? 'API ONLINE · CUDA ACTIVE' : 'API ONLINE · CPU ACTIVE')
+                  : apiStatus === 'checking'
+                  ? 'CONNECTING TO BACKEND...'
+                  : 'API OFFLINE'}
+              </span>
+              {apiStatus === 'offline' && onRetryConnect && (
+                <button
+                  onClick={onRetryConnect}
+                  className="px-1.5 py-0.5 bg-steel/30 text-silver hover:text-white rounded text-[9px] uppercase"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
             <button
               onClick={() => {
                 onLaunchSolver();

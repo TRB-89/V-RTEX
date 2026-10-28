@@ -23,6 +23,7 @@ interface ResultsInspectorProps {
   variables: VariableDef[];
   constraints: ConstraintDef[];
   isSolving: boolean;
+  solveDurationSeconds?: number;
   onInspectMatrix?: () => void;
   onViewConvergence?: () => void;
 }
@@ -32,6 +33,7 @@ export const ResultsInspector: React.FC<ResultsInspectorProps> = ({
   variables,
   constraints,
   isSolving,
+  solveDurationSeconds,
   onInspectMatrix,
   onViewConvergence,
 }) => {
@@ -197,6 +199,11 @@ export const ResultsInspector: React.FC<ResultsInspectorProps> = ({
           <p className="text-[11px] text-violet-muted max-w-xs mx-auto">
             Dispatching problem formulation to native C++20/CUDA binary.
           </p>
+          {solveDurationSeconds !== undefined && solveDurationSeconds >= 3 && (
+            <p className="text-[10px] text-amber-300/90 max-w-xs mx-auto pt-1 font-mono">
+              Elapsed: {solveDurationSeconds}s · Initial cold-start wake-up on Render may take 30–50s.
+            </p>
+          )}
         </div>
       ) : result ? (
         <div className="space-y-4">

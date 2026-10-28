@@ -22,6 +22,8 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'matrix' | 'convergence' | 'benchmarks'>('overview');
   const [capabilities, setCapabilities] = useState<ApiCapabilitiesResponse | null>(null);
   const [health, setHealth] = useState<ApiHealthResponse | null>(null);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [apiError, setApiError] = useState<string | null>(null);
   const [presets, setPresets] = useState<ProblemPreset[]>([]);
   const [benchmarkData, setBenchmarkData] = useState<Phase8EBenchmarkDataset | null>(null);
   const [activeResult, setActiveResult] = useState<SolverResult | null>(null);
@@ -29,17 +31,32 @@ export const App: React.FC = () => {
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
   const [isReportOpen, setIsReportOpen] = useState<boolean>(false);
 
+  // Health and capabilities verification function with retry support
+  const checkHealthAndCapabilities = async () => {
+    setApiStatus('checking');
+    setApiError(null);
+    try {
+      const [h, c] = await Promise.all([
+        SolverApiClient.getHealth(),
+        SolverApiClient.getCapabilities(),
+      ]);
+      setHealth(h);
+      setCapabilities(c);
+      if (h.status === 'online' || h.status === 'healthy') {
+        setApiStatus('online');
+      } else {
+        setApiStatus('offline');
+      }
+    } catch (err: any) {
+      console.warn('Backend connection failed:', err);
+      setApiStatus('offline');
+      setApiError(err.message || 'Render backend is offline or sleeping.');
+    }
+  };
+
   // Fetch telemetry and datasets on mount
   useEffect(() => {
-    // 1. Health
-    SolverApiClient.getHealth()
-      .then(setHealth)
-      .catch((err) => console.warn('Could not query API health:', err));
-
-    // 2. Capabilities
-    SolverApiClient.getCapabilities()
-      .then(setCapabilities)
-      .catch((err) => console.warn('Could not query engine capabilities:', err));
+    checkHealthAndCapabilities();
 
     // 3. Presets
     SolverApiClient.getPresets()
@@ -84,6 +101,9 @@ export const App: React.FC = () => {
         setActiveTab={setActiveTab}
         capabilities={capabilities}
         health={health}
+        apiStatus={apiStatus}
+        apiError={apiError}
+        onRetryConnect={checkHealthAndCapabilities}
         reducedMotion={reducedMotion}
         setReducedMotion={setReducedMotion}
         onLaunchSolver={() => setActiveTab('workspace')}

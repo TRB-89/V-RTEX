@@ -33,7 +33,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     capabilityRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const gpuName = deviceInfo?.gpu?.name || "NVIDIA GeForce RTX 3050 Laptop GPU";
+  const gpuName = deviceInfo?.gpu?.name || (deviceInfo?.cuda_available ? "NVIDIA GeForce RTX 3050 Laptop GPU" : "CPU Native Host (SIMD x86_64)");
 
   // Computational Storytelling sequence steps
   const storytellingSteps = [
@@ -150,7 +150,7 @@ Status: OPTIMAL_VERIFIED_FP64`,
               <span className="w-1.5 h-1.5 rounded-full bg-silver" />
               <span className="uppercase tracking-widest text-[11px]">MATHEMATICAL COMPUTING SYSTEM</span>
               <span className="text-steel">/</span>
-              <span className="text-[11px] text-ash">C++20 · CUDA 13.4 · FP64</span>
+              <span className="text-[11px] text-ash">C++20 · {deviceInfo?.cuda_available ? 'CUDA 13.4 · ' : 'CPU HOST · '}FP64</span>
             </div>
 
             {/* Oversized Swiss Editorial Headline */}
@@ -196,7 +196,7 @@ Status: OPTIMAL_VERIFIED_FP64`,
             <div className="pt-4 flex items-center space-x-6 text-[11px] font-mono text-ash/80 border-t border-steel/20">
               <div>
                 <span className="text-steel uppercase mr-2">DEVICE</span>
-                <span className="text-silver">{gpuName.split(' ')[1] || 'RTX 3050'}</span>
+                <span className="text-silver">{deviceInfo?.cuda_available ? (gpuName.split(' ')[1] || 'GPU') : 'CPU HOST'}</span>
               </div>
               <span className="text-steel">·</span>
               <div>
@@ -206,7 +206,7 @@ Status: OPTIMAL_VERIFIED_FP64`,
               <span className="text-steel">·</span>
               <div>
                 <span className="text-steel uppercase mr-2">ACCELERATION</span>
-                <span className="text-silver">SM_86 cuBLAS</span>
+                <span className="text-silver">{deviceInfo?.cuda_available ? 'SM_86 cuBLAS' : 'SIMD x86_64 CPU'}</span>
               </div>
             </div>
 
