@@ -24,12 +24,15 @@ COPY CMakeLists.txt ./
 COPY include/ ./include/
 COPY src/ ./src/
 
-# Compile the native C++20 solver runner with optimizations and CUDA disabled
-RUN cmake -B build \
+# Compile the native C++20 solver runner with optimizations and CUDA, tests, benchmarks disabled
+RUN cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=20 \
     -DVORTEX_ENABLE_CUDA=OFF \
-    && cmake --build build --target vortex_solver_runner -j$(nproc) \
+    -DVORTEX_BUILD_TESTS=OFF \
+    -DVORTEX_BUILD_BENCHMARKS=OFF \
+    -DBUILD_TESTING=OFF \
+    && cmake --build build --target vortex_solver_runner --parallel 2 \
     && strip build/vortex_solver_runner \
     && chmod +x build/vortex_solver_runner
 
